@@ -1,0 +1,12 @@
+name: mrt_ss_binary
+title: mrt_ss_binary
+username:
+account: tqian
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2287986
+bundleId: 3168987
+url: https://tqian.shinyapps.io/mrt_ss_binary/
+when: 1589948422.48781
+asMultiple: FALSE
+asStatic: FALSE
