@@ -1,5 +1,5 @@
 library(shiny)
-source("SampleSizeCalculatorBinaryOutcomeMRT.R")
+source("sample_size_calc_bin_mrt.R")
 
 shinyServer(function(input,output,session){
     
