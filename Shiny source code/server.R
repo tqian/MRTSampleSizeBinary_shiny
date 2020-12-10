@@ -7,10 +7,14 @@ shinyServer(function(input,output,session){
     
     total_decision_points <- reactive({
         validate(
-            need(input$days == round(input$days),"Error: Please enter integer values for the number of days"),
-            need(input$days > 0 ,"Error: Please specify the number of days greater than 0"),
-            need(input$occ_per_day == round(input$occ_per_day),"Error: Please enter integer values for the number of decision points per day"),
-            need(input$occ_per_day > 0 ,"Error: Please specify the number of decision points per day greater than 0")
+            need(input$days == round(input$days),
+                 "Error: Please enter integer values for the number of days"),
+            need(input$days > 0 ,
+                 "Error: Please specify the number of days greater than 0"),
+            need(input$occ_per_day == round(input$occ_per_day),
+                 "Error: Please enter integer values for the number of decision points per day"),
+            need(input$occ_per_day > 0 ,
+                 "Error: Please specify the number of decision points per day greater than 0")
         )
         input$days * input$occ_per_day
     })
@@ -34,9 +38,13 @@ shinyServer(function(input,output,session){
         delta <- as.vector(P_inter_dec()$Randomization.Probability)
         validate(
             need(!is.null(input$file1), "Warning: No file is uploaded"),
-            need(is.null(input$file1) || length(data) == input$days * input$occ_per_day, "Error: the number of decision times doesn't match."),
-            need(is.null(input$file1) || max(data) <= 1, "Error: some value of randomization probability is bigger than 1"),
-            need(is.null(input$file1) || min(data) >= 0, "Error: some value of randomization probability is less than 0")
+            need(is.null(input$file1) || length(data) == input$days * input$occ_per_day, 
+                 "Error: the number of decision times doesn't match."),
+            need(is.null(input$file1) || max(data) <= 1, 
+                 "Error: some value of randomization prob
+                 ability is bigger than 1"),
+            need(is.null(input$file1) || min(data) >= 0, 
+                 "Error: some value of randomization probability is less than 0")
         )
         head(P_inter_dec(), n = 5)
     })
@@ -58,9 +66,12 @@ shinyServer(function(input,output,session){
         delta <- as.vector(P_inter_days()$Randomization.Probability)
         validate(
             need(!is.null(input$file2), "Warning: No file is uploaded"),
-            need(is.null(input$file2) || length(data) == input$days , "Error: the number of days doesn't match."),
-            need(is.null(input$file2) || max(data) <= 1, "Error: some value of randomization probability is bigger than 1"),
-            need(is.null(input$file2) || min(data) >= 0, "Error: some value of randomization probability is less than 0")
+            need(is.null(input$file2) || length(data) == input$days , 
+                 "Error: the number of days doesn't match."),
+            need(is.null(input$file2) || max(data) <= 1, 
+                 "Error: some value of randomization probability is bigger than 1"),
+            need(is.null(input$file2) || min(data) >= 0, 
+                 "Error: some value of randomization probability is less than 0")
         )
         head(P_inter_days(), n = 5)
     })
@@ -73,13 +84,16 @@ shinyServer(function(input,output,session){
         result <- 0.5
         if (input$alpha_choices == "constant") {
             validate(
-                need(input$alpha_constant_mean > 0, "Error: Please specify the baseline success probability greater than 0")
+                need(input$alpha_constant_mean > 0, 
+                     "Error: Please specify the baseline success probability greater than 0")
             )
             result <- rep(input$alpha_constant_mean, total_decision_points())
         } else if (input$alpha_choices == "loglinear") {
             validate(
-                need(input$alpha_loglinear_initial > 0, "Error: Please specify the initial value of baseline success probability greater than 0"),
-                need(input$alpha_loglinear_final > 0, "Error: Please specify the final value of baseline success probability greater than 0")
+                need(input$alpha_loglinear_initial > 0, 
+                     "Error: Please specify the initial value of baseline success probability greater than 0"),
+                need(input$alpha_loglinear_final > 0, 
+                     "Error: Please specify the final value of baseline success probability greater than 0")
             )
             initial_log <- log(input$alpha_loglinear_initial)
             final_log <- log(input$alpha_loglinear_final)
@@ -87,8 +101,10 @@ shinyServer(function(input,output,session){
             result <- exp(result_log)
         }
         validate(
-            need(min(result) > 0,"Warning: Some values of baseline success probability are less than or equal to 0"),
-            need(max(result) <= 1,"Warning: Some values of baseline success probability are greater than 1")
+            need(min(result) > 0,
+                 "Warning: Some values of baseline success probability are less than or equal to 0"),
+            need(max(result) <= 1,
+                 "Warning: Some values of baseline success probability are greater than 1")
         )
         result
     })
@@ -109,22 +125,28 @@ shinyServer(function(input,output,session){
         result <- 1
         if (input$beta_choices == "constant") {
             validate(
-                need(input$beta_constant_mean > 0, "Error: Please specify the proximal treatment effect greater than 0")
+                need(input$beta_constant_mean > 0, 
+                     "Error: Please specify the proximal treatment effect greater than 0")
             )
             result <- rep(input$beta_constant_mean, total_decision_points())
         } else if (input$beta_choices == "loglinear") {
             validate(
-                need(input$beta_loglinear_initial > 0, "Error: Please specify the initial value of proximal treatment effect greater than 0"),
-                need(input$beta_loglinear_final > 0, "Error: Please specify the final value of proximal treatment effect greater than 0")
+                need(input$beta_loglinear_initial > 0, 
+                     "Error: Please specify the initial value of proximal treatment effect greater than 0"),
+                need(input$beta_loglinear_final > 0, 
+                     "Error: Please specify the final value of proximal treatment effect greater than 0")
             )
             initial_log <- log(input$beta_loglinear_initial)
             final_log <- log(input$beta_loglinear_final)
-            result_log <- seq(from = initial_log, to = final_log, length.out = total_decision_points())
+            result_log <- seq(from = initial_log, to = final_log, 
+                              length.out = total_decision_points())
             result <- exp(result_log)
         }
         validate(
-            need(min(result * alpha_input()) > 0,"Warning: Some values of success probability are less than or equal to 0"),
-            need(max(result * alpha_input()) <= 1,"Warning: Some values of success probability are greater than 1")
+            need(min(result * alpha_input()) > 0,
+                 "Warning: Some values of success probability are less than or equal to 0"),
+            need(max(result * alpha_input()) <= 1,
+                 "Warning: Some values of success probability are greater than 1")
         )
         result
     })
@@ -144,7 +166,8 @@ shinyServer(function(input,output,session){
     p10 <- reactive({alpha_input()[1]})
     pT0 <- reactive({alpha_input()[total_decision_points()]})
     p11 <- reactive({alpha_input()[1] * beta_input()[1]})
-    pT1 <- reactive({alpha_input()[total_decision_points()] * beta_input()[total_decision_points()]})
+    pT1 <- reactive({alpha_input()[total_decision_points()] *
+            beta_input()[total_decision_points()]})
     
     #### Expected Availability ####
     
@@ -155,20 +178,25 @@ shinyServer(function(input,output,session){
         result <- 0.5
         if (input$avail_choices == "constant") {
             validate(
-                need(input$avail_constant_mean > 0, "Error: Please specify the average availability greater than 0")
+                need(input$avail_constant_mean > 0, 
+                     "Error: Please specify the average availability greater than 0")
             )
             result <- rep(input$avail_constant_mean, total_decision_points())
         } else if (input$avail_choices == "linear") {
             validate(
-                need(input$avail_linear_initial > 0, "Error: Please specify the initial value of expected availability greater than 0"),
-                need(input$avail_linear_final > 0, "Error: Please specify the final value of expected availability greater than 0")
+                need(input$avail_linear_initial > 0, 
+                     "Error: Please specify the initial value of expected availability greater than 0"),
+                need(input$avail_linear_final > 0, 
+                     "Error: Please specify the final value of expected availability greater than 0")
             )
             result <- seq(from = input$avail_linear_initial, to = input$avail_linear_final, length.out = total_decision_points())
         } 
         
         validate(
-            need(min(result) > 0,"Warning: Some values of expected availability are less than or equal to 0"),
-            need(max(result) <= 1,"Warning: Some values of expected availability are greater than 1")
+            need(min(result) > 0,
+                 "Warning: Some values of expected availability are less than or equal to 0"),
+            need(max(result) <= 1,
+                 "Warning: Some values of expected availability are greater than 1")
         )
         result
     })
@@ -272,19 +300,28 @@ shinyServer(function(input,output,session){
                                           sig_level = c())
     
     observeEvent(input$button_calculate_sample_size, {
-        sample_size_history$avail_pattern <- c(sample_size_history$avail_pattern, input$avail_choices)
-        sample_size_history$avail_init <- c(sample_size_history$avail_init, avail_input()[1])
-        sample_size_history$avail_final <- c(sample_size_history$avail_final, avail_input()[total_decision_points()])
-        sample_size_history$rand_prob <- c(sample_size_history$rand_prob, input$rand_prob_const)
-        sample_size_history$alpha_shape <- c(sample_size_history$alpha_shape, input$alpha_choices)
+        sample_size_history$avail_pattern <- c(sample_size_history$avail_pattern, 
+                                               input$avail_choices)
+        sample_size_history$avail_init <- c(sample_size_history$avail_init, 
+                                            avail_input()[1])
+        sample_size_history$avail_final <- c(sample_size_history$avail_final, 
+                                             avail_input()[total_decision_points()])
+        sample_size_history$rand_prob <- c(sample_size_history$rand_prob, 
+                                           input$rand_prob_const)
+        sample_size_history$alpha_shape <- c(sample_size_history$alpha_shape, 
+                                             input$alpha_choices)
         sample_size_history$p10 <- c(sample_size_history$p10, p10())
         sample_size_history$pT0 <- c(sample_size_history$pT0, pT0())
-        sample_size_history$beta_shape <- c(sample_size_history$beta_shape, input$beta_choices)
+        sample_size_history$beta_shape <- c(sample_size_history$beta_shape, 
+                                            input$beta_choices)
         sample_size_history$p11 <- c(sample_size_history$p11, p11())
         sample_size_history$pT1 <- c(sample_size_history$pT1, pT1())
-        sample_size_history$sample_size <- c(sample_size_history$sample_size, sample_size())
-        sample_size_history$power <- c(sample_size_history$power, input$power)
-        sample_size_history$sig_level <- c(sample_size_history$sig_level, input$sig_level)
+        sample_size_history$sample_size <- c(sample_size_history$sample_size, 
+                                             sample_size())
+        sample_size_history$power <- c(sample_size_history$power, 
+                                       input$power)
+        sample_size_history$sig_level <- c(sample_size_history$sig_level, 
+                                           input$sig_level)
     })
     
     output$sample_size_history_table <- renderTable({
@@ -312,19 +349,27 @@ shinyServer(function(input,output,session){
                                     sig_level = c())
 
     observeEvent(input$button_calculate_power, {
-        power_history$avail_pattern <- c(power_history$avail_pattern, input$avail_choices)
-        power_history$avail_init <- c(power_history$avail_init, avail_input()[1])
-        power_history$avail_final <- c(power_history$avail_final, avail_input()[total_decision_points()])
-        power_history$rand_prob <- c(power_history$rand_prob, input$rand_prob_const)
-        power_history$alpha_shape <- c(power_history$alpha_shape, input$alpha_choices)
+        power_history$avail_pattern <- c(power_history$avail_pattern, 
+                                         input$avail_choices)
+        power_history$avail_init <- c(power_history$avail_init, 
+                                      avail_input()[1])
+        power_history$avail_final <- c(power_history$avail_final, 
+                                       avail_input()[total_decision_points()])
+        power_history$rand_prob <- c(power_history$rand_prob, 
+                                     input$rand_prob_const)
+        power_history$alpha_shape <- c(power_history$alpha_shape, 
+                                       input$alpha_choices)
         power_history$p10 <- c(power_history$p10, p10())
         power_history$pT0 <- c(power_history$pT0, pT0())
-        power_history$beta_shape <- c(power_history$beta_shape, input$beta_choices)
+        power_history$beta_shape <- c(power_history$beta_shape, 
+                                      input$beta_choices)
         power_history$p11 <- c(power_history$p11, p11())
         power_history$pT1 <- c(power_history$pT1, pT1())
-        power_history$sample_size <- c(power_history$sample_size, input$sample_size)
+        power_history$sample_size <- c(power_history$sample_size, 
+                                       input$sample_size)
         power_history$power <- c(power_history$power, power())
-        power_history$sig_level <- c(power_history$sig_level, input$sig_level)
+        power_history$sig_level <- c(power_history$sig_level, 
+                                     input$sig_level)
     })
     
     output$power_history_table <- renderTable({
