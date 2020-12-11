@@ -480,7 +480,10 @@ is considered critical to maintaining participant buy-in and engagement."),
                      conditionalPanel(condition = "input.radio_choices == 'choice_power'",
                                       actionButton("button_calculate_power", "Result"),
                                       uiOutput("power")
-                     )),
+                     ),
+                     
+                     plotOutput("power_vs_n")
+                     ),
             tabPanel("History",
                      conditionalPanel(condition = "input.radio_choices == 'choice_sample_size'",
                                       # fluidRow(

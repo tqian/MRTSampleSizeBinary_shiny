@@ -436,6 +436,39 @@ shinyServer(function(input,output,session){
                    "Avail Final" = sample_size_history$avail_final)
     })
     
+    
+    pow_vs_n_plot <- eventReactive(input$button_calculate_sample_size, {
+        # The determination of randomization probability is not well-implemented.
+        # Need to think more carefully, because there are three sources of rand. prob.
+        rand_prob <- rep(input$rand_prob_const, total_decision_points())
+        
+        if (!is.null(input$file1)) {
+            rand_prob <- rep(P_inter_days()$Randomization.Probability, 
+                             each = input$occ_per_day)
+        }
+        
+        if (!is.null(input$file2)) {
+            rand_prob <- P_inter_dec()$Randomization.Probability
+        }
+        
+        power_vs_n_plot_wrapper(p10 = p10(),
+                                pT0 = pT0(),
+                                p11 = p11(),
+                                pT1 = pT1(),
+                                total_T = total_decision_points(),
+                                alpha_shape = input$alpha_choices,
+                                beta_shape = input$beta_choices,
+                                rand_prob = rand_prob,  ## p_t
+                                avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
+                                typeIerror = input$sig_level)  
+        
+        
+    })    
+
+    output$power_vs_n <- renderPlot({
+        pow_vs_n_plot()
+    })    
+    
     power_history <- reactiveValues(avail_pattern = c(), 
                                     avail_init = c(), 
                                     avail_final = c(),
