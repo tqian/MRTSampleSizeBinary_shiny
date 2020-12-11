@@ -18,7 +18,7 @@ shinyServer(function(input,output,session){
                  "Error: Please specify the number of decision points per day greater than 0")
         )
         
-        input$days * input$occ_per_day
+        ceiling(input$days * input$occ_per_day)
     })
     
     ### Reading the file for time-varying randomization probability###
@@ -59,7 +59,7 @@ shinyServer(function(input,output,session){
         if (is.null(inFile))
             return(NULL)
         
-        read.csv(inFile$datapath, header = TRUE, sep = ',')
+        read.csv(inFile$datapath, header = TRUE)
     })
     
     #### Output the first five rows of the table reading from the file with respect to days
@@ -79,6 +79,48 @@ shinyServer(function(input,output,session){
         
         head(P_inter_days(), n = 5)
     })
+    
+
+    #### Templates #####
+    
+    days_df <- reactive({
+        col_names <- c("Days", "Randomization Probability")
+        temp_df <- data.frame(cbind(1:input$days, rep(0.4, input$days)))
+        colnames(temp_df) <- col_names
+        temp_df
+    })
+    
+
+    output$days_template <- downloadHandler(
+        filename = function() {
+            paste0("rand_prob_", input$days, "_days.csv")
+        },
+        content = function(file){
+            write.csv(days_df(), file, row.names=FALSE)
+        }
+    )
+    
+    dec_pts_df <- reactive({
+        col_names <- c("Dec Times", "Randomization Probability")
+        dec_pts <- ceiling(input$days * input$occ_per_day)
+        temp_df <- data.frame(cbind(1:dec_pts, rep(0.4, dec_pts)))
+        colnames(temp_df) <- col_names
+        temp_df
+    })
+    
+    output$dec_pts_template <- downloadHandler(
+        filename = function() {
+            paste0("rand_prob_", 
+                  round(input$days*input$occ_per_day), 
+                  "_dec_pts_over_",
+                  input$days,
+                  "days.csv")
+        },
+        content = function(file){
+            write.csv(dec_pts_df(), file, row.names=FALSE)
+        }
+    )
+    
     
     #### Calculating baseline success probability ####
     
