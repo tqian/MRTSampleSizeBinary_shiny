@@ -482,7 +482,8 @@ is considered critical to maintaining participant buy-in and engagement."),
                                       uiOutput("power")
                      ),
                      
-                     plotOutput("power_vs_n")
+                     plotOutput("power_vs_n"),
+                     dataTableOutput("power_summary")
                      ),
             tabPanel("History",
                      conditionalPanel(condition = "input.radio_choices == 'choice_sample_size'",
