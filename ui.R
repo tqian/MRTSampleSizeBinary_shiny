@@ -470,18 +470,20 @@ is considered critical to maintaining participant buy-in and engagement."),
             tabPanel("Current Result",
                      conditionalPanel(condition = "input.radio_choices == 'choice_sample_size'",
                                       actionButton("button_calculate_sample_size", "Result"),
-                                      uiOutput("sample_size")
+                                      uiOutput("sample_size"),
+                                      plotOutput("power_vs_n1"),
+                                      dataTableOutput("power_summary1")
                      ),
                      
                      ##### choice to calculate sample size(action buttons) #####
                      
                      conditionalPanel(condition = "input.radio_choices == 'choice_power'",
                                       actionButton("button_calculate_power", "Result"),
-                                      uiOutput("power")
+                                      uiOutput("power"),
+                                      plotOutput("power_vs_n2"),
+                                      dataTableOutput("power_summary2")                                      
                      ),
                      
-                     plotOutput("power_vs_n"),
-                     dataTableOutput("power_summary")
                      ),
             tabPanel("History",
                      conditionalPanel(condition = "input.radio_choices == 'choice_sample_size'",
