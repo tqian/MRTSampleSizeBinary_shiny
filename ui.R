@@ -269,17 +269,19 @@ is considered critical to maintaining participant buy-in and engagement."),
                                         ### "respecting to number of days"
                                         conditionalPanel(condition="input.numbers =='re_days'",
                                                          p('If you want a template of .csv file ,',
-                                                           'you can first download the template and then try uploading them.'
+                                                           'you can first download the template',
+                                                           a(href = 'RandomizationProbability_Days.csv', 'RandomizationProbability_Days.csv'),
+                                                           'file, and then try uploading them.'
                                                          ),
-                                                         downloadButton("days_template", "Template"),
                                                          p('In the sample file, the randomization probability is contantly 0.4'),
                                                          p('The number of inputs for this file should be equal to the number of days.')
                                         ),
                                         conditionalPanel(condition="input.numbers =='re_dec'",
                                                          p('If you want a template of .csv file,',
-                                                           'you can first download the template and then try uploading them.'
+                                                           'you can first download the template',
+                                                           a(href = 'RandomizationProbability_DecisionTimes.csv', 'RandomizationProbability_DecisionTimes.csv'),
+                                                           'files, and then try uploading them.'
                                                          ),
-                                                         downloadButton("dec_pts_template", "Template"),
                                                          p('In the sample file, the randomization probability is contantly 0.4'),
                                                          p('The number of inputs for this file should be equal to the number of decision times.')
                                         )
@@ -480,8 +482,7 @@ is considered critical to maintaining participant buy-in and engagement."),
                                       uiOutput("power")
                      ),
                      
-                     plotOutput("power_vs_n"),
-                     dataTableOutput("power_summary")
+                     plotOutput("power_vs_n")
                      ),
             tabPanel("History",
                      conditionalPanel(condition = "input.radio_choices == 'choice_sample_size'",
