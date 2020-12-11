@@ -1,5 +1,4 @@
 library(shiny)
-library(DT)
 source("sample_size_calc_bin_mrt.R")
 
 shinyServer(function(input,output,session){
@@ -81,6 +80,7 @@ shinyServer(function(input,output,session){
         head(P_inter_days(), n = 5)
     })
     
+
     #### Templates #####
     
     days_df <- reactive({
@@ -478,6 +478,7 @@ shinyServer(function(input,output,session){
                    "Avail Final" = sample_size_history$avail_final)
     })
     
+
     ###### Power vs Sample Size plot #####
     pow_vs_n_plot1 <- eventReactive(input$button_calculate_sample_size, {
         # The determination of randomization probability is not well-implemented.
@@ -506,6 +507,7 @@ shinyServer(function(input,output,session){
         
         
     })    
+
 
     output$power_vs_n1 <- renderPlot({
         pow_vs_n_plot1()
@@ -604,6 +606,8 @@ shinyServer(function(input,output,session){
     })  
     
     output$power_summary2 <- DT::renderDataTable({pow_summary2()}) 
+
+
     
     power_history <- reactiveValues(avail_pattern = c(), 
                                     avail_init = c(), 
@@ -618,9 +622,6 @@ shinyServer(function(input,output,session){
                                     sample_size = c(),
                                     power = c(),
                                     sig_level = c())
-    
-    
-
 
     observeEvent(input$button_calculate_power, {
         power_history$avail_pattern <- c(power_history$avail_pattern, 
