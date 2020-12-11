@@ -323,7 +323,8 @@ is considered critical to maintaining participant buy-in and engagement."),
                    ### constant, linear, loglinear
                    selectizeInput("alpha_choices", label = "Select one of the following trends for the success probability null curve", 
                                   choices=list("Constant"="constant",
-                                               "Log-linear"="loglinear"),
+                                               "Log-linear"="loglinear",
+                                               "Log-quadratic"="logquadratic"),
                                   options = list(
                                       placeholder = "Please select a trend",
                                       onInitialize = I('function() { this.setValue(0); }')
@@ -344,11 +345,18 @@ is considered critical to maintaining participant buy-in and engagement."),
                                     p("The loglinearly decreasing form of a success probability null curve might be used if participants
                                                               are likely to disengage the activity suggestionss and thus the success probability under no treatment will decrease as the 
                                                                study goes.")
+                   ),
+                   ### Inputs for logquadratic trend of success probability null curve ###
+                   conditionalPanel(condition="input.alpha_choices == 'logquadratic' ",
+                                    sliderInput("alpha_logquad_initial", label = "Initial Value of Success Probability Null Curve", min = 0, max = 1,value = 0.6),
+                                    sliderInput("alpha_logquad_change",label="Change point Value of Success Probability Null Curve", min = 0, max = 1,value = 0.4),
+                                    sliderInput("alpha_logquad_final",label="Final Value of Success Probability Null Curve", min = 0, max = 1,value = 0.4),
+                                    p(em("Notes"),": The success probability under no treatment varies quadratically over the study.")
                    )
             ),
             column(1),
             column(6,
-                   conditionalPanel(condition="['constant', 'loglinear'].includes(input.alpha_choices)",
+                   conditionalPanel(condition="['constant', 'loglinear', 'logquadratic'].includes(input.alpha_choices)",
                                     plotOutput("alpha_graph"))
             )
             
@@ -374,7 +382,8 @@ is considered critical to maintaining participant buy-in and engagement."),
                    ### quadratic, constant, linear
                    selectizeInput("beta_choices", label = "Select one of the following trends for the proximal treatment effect", 
                                   choices=list("Constant"="constant",
-                                               "Log-linear"="loglinear"),
+                                               "Log-linear"="loglinear",
+                                               "Log-Quadratic"="logquadratic"),
                                   options = list(
                                       placeholder = "Please select a trend",
                                       onInitialize = I('function() { this.setValue(0); }')

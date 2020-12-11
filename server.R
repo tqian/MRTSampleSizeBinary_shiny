@@ -288,7 +288,7 @@ shinyServer(function(input,output,session){
             rand_prob <- P_inter_dec()$Randomization.Probability
         }
         
-        calculateSampleSizeBinaryMRT_wrapper(p10 = p10(),
+        calculate_mrt_bin_samplesize_wrapper(p10 = p10(),
                                              pT0 = pT0(),
                                              p11 = p11(),
                                              pT1 = pT1(),
@@ -336,7 +336,7 @@ shinyServer(function(input,output,session){
         }
         
         
-        calculatePowerBinaryMRT_wrapper(p10 = p10(),
+        calculate_mrt_bin_power_wrapper(p10 = p10(),
                                         pT0 = pT0(),
                                         p11 = p11(),
                                         pT1 = pT1(),

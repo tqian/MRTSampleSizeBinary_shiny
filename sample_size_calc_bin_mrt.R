@@ -12,7 +12,7 @@ if (0) {
     avail_pattern <- rep(0.7, total_T)
     typeIerror <- 0.05
     
-    calculateSampleSizeBinaryMRT_wrapper(p10, pT0, p11, pT1,  total_T,
+    calculate_mrt_bin_samplesize_wrapper(p10, pT0, p11, pT1,  total_T,
                                          alpha_shape, 
                                          beta_shape, 
                                          rand_prob, 
@@ -20,7 +20,7 @@ if (0) {
                                          typeIerror,
                                          0.8)
     
-    calculatePowerBinaryMRT_wrapper(p10, pT0, p11, pT1,  total_T,
+    calculate_mrt_bin_power_wrapper(p10, pT0, p11, pT1,  total_T,
                                          alpha_shape, 
                                          beta_shape, 
                                          rand_prob, 
@@ -30,10 +30,10 @@ if (0) {
 }
 
 # Calculate sample size with given power: wrapper function
-calculateSampleSizeBinaryMRT_wrapper <- function(p10, pT0, p11, pT1,
+calculate_mrt_bin_samplesize_wrapper <- function(p10, pT0, p11, pT1,
                                                  total_T,
-                                                 alpha_shape = c("constant", "loglinear"),
-                                                 beta_shape = c("constant", "loglinear"),
+                                                 alpha_shape = c("constant", "loglinear", "logquadratic"),
+                                                 beta_shape = c("constant", "loglinear", "logquadratic"),
                                                  rand_prob,  ## p_t
                                                  avail_pattern, ## E[I_t]  # TQ: will assume this is vector of length T
                                                  typeIerror,
@@ -47,12 +47,17 @@ calculateSampleSizeBinaryMRT_wrapper <- function(p10, pT0, p11, pT1,
         g_t <- matrix(1, nrow = total_T, ncol = 1)
     } else if (alpha_shape == "loglinear") {
         g_t <- cbind(1, 1:total_T)
+    } else if(alpha_shape == "logquadratic")
+    {
+        g_t <- cbind(1, 1:total_T, (1:total_T)^2)
     }
     
     if (beta_shape == "constant") {
         f_t <- matrix(1, nrow = total_T, ncol = 1)
     } else if (beta_shape == "loglinear") {
         f_t <- cbind(1, 1:total_T)
+    } else if (beta_shape == "logquadratic"){
+        f_t <- cbind(1, 1:total_T, (1:total_T)^2)
     }
     
     sample_size <- calculate_mrt_bin_samplesize_f(avail_pattern = avail_pattern,
@@ -69,10 +74,10 @@ calculateSampleSizeBinaryMRT_wrapper <- function(p10, pT0, p11, pT1,
 
 
 # Calculate sample size with given sample size: wrapper function
-calculatePowerBinaryMRT_wrapper <- function(p10, pT0, p11, pT1,
+calculate_mrt_bin_power_wrapper <- function(p10, pT0, p11, pT1,
                                       total_T,
-                                      alpha_shape = c("constant", "loglinear"),
-                                      beta_shape = c("constant", "loglinear"),
+                                      alpha_shape = c("constant", "loglinear", "logquadratic"),
+                                      beta_shape = c("constant", "loglinear", "logquadratic"),
                                       rand_prob,  ## p_t
                                       avail_pattern, ## E[I_t]  # TQ: will assume this is vector of length T
                                       typeIerror,
