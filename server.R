@@ -19,7 +19,7 @@ shinyServer(function(input,output,session){
                  "Error: Please specify the number of decision points per day greater than 0")
         )
         
-        input$days * input$occ_per_day
+        ceiling(input$days * input$occ_per_day)
     })
     
     ### Reading the file for time-varying randomization probability###
@@ -60,7 +60,7 @@ shinyServer(function(input,output,session){
         if (is.null(inFile))
             return(NULL)
         
-        read.csv(inFile$datapath, header = TRUE, sep = ',')
+        read.csv(inFile$datapath, header = TRUE)
     })
     
     #### Output the first five rows of the table reading from the file with respect to days
@@ -93,7 +93,7 @@ shinyServer(function(input,output,session){
 
     output$days_template <- downloadHandler(
         filename = function() {
-            paste("rand_prob_", input$days, "_days.csv")
+            paste0("rand_prob_", input$days, "_days.csv")
         },
         content = function(file){
             write.csv(days_df(), file, row.names=FALSE)
@@ -110,7 +110,7 @@ shinyServer(function(input,output,session){
     
     output$dec_pts_template <- downloadHandler(
         filename = function() {
-            paste("rand_prob_", 
+            paste0("rand_prob_", 
                   round(input$days*input$occ_per_day), 
                   "_dec_pts_over_",
                   input$days,
