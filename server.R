@@ -1,4 +1,5 @@
 library(shiny)
+library(DT)
 source("sample_size_calc_bin_mrt.R")
 
 shinyServer(function(input,output,session){
@@ -79,6 +80,47 @@ shinyServer(function(input,output,session){
         
         head(P_inter_days(), n = 5)
     })
+    
+    #### Templates #####
+    
+    days_df <- reactive({
+        col_names <- c("Days", "Randomization Probability")
+        temp_df <- data.frame(cbind(1:input$days, rep(0.4, input$days)))
+        colnames(temp_df) <- col_names
+        temp_df
+    })
+    
+
+    output$days_template <- downloadHandler(
+        filename = function() {
+            paste("rand_prob_", input$days, "_days.csv")
+        },
+        content = function(file){
+            write.csv(days_df(), file, row.names=FALSE)
+        }
+    )
+    
+    dec_pts_df <- reactive({
+        col_names <- c("Dec Times", "Randomization Probability")
+        dec_pts <- ceiling(input$days * input$occ_per_day)
+        temp_df <- data.frame(cbind(1:dec_pts, rep(0.4, dec_pts)))
+        colnames(temp_df) <- col_names
+        temp_df
+    })
+    
+    output$dec_pts_template <- downloadHandler(
+        filename = function() {
+            paste("rand_prob_", 
+                  round(input$days*input$occ_per_day), 
+                  "_dec_pts_over_",
+                  input$days,
+                  "days.csv")
+        },
+        content = function(file){
+            write.csv(dec_pts_df(), file, row.names=FALSE)
+        }
+    )
+    
     
     #### Calculating baseline success probability ####
     
@@ -436,7 +478,7 @@ shinyServer(function(input,output,session){
                    "Avail Final" = sample_size_history$avail_final)
     })
     
-    
+    ###### Power vs Sample Size plot #####
     pow_vs_n_plot <- eventReactive(input$button_calculate_sample_size, {
         # The determination of randomization probability is not well-implemented.
         # Need to think more carefully, because there are three sources of rand. prob.
@@ -467,7 +509,38 @@ shinyServer(function(input,output,session){
 
     output$power_vs_n <- renderPlot({
         pow_vs_n_plot()
-    })    
+    })
+    
+    #### Power Summary ######
+    pow_summary <- eventReactive(input$button_calculate_sample_size, {
+        # The determination of randomization probability is not well-implemented.
+        # Need to think more carefully, because there are three sources of rand. prob.
+        rand_prob <- rep(input$rand_prob_const, total_decision_points())
+        
+        if (!is.null(input$file1)) {
+            rand_prob <- rep(P_inter_days()$Randomization.Probability, 
+                             each = input$occ_per_day)
+        }
+        
+        if (!is.null(input$file2)) {
+            rand_prob <- P_inter_dec()$Randomization.Probability
+        }
+        
+        power_summary_wrapper(p10 = p10(),
+                              pT0 = pT0(),
+                              p11 = p11(),
+                              pT1 = pT1(),
+                              total_T = total_decision_points(),
+                              alpha_shape = input$alpha_choices,
+                              beta_shape = input$beta_choices,
+                              rand_prob = rand_prob,  ## p_t
+                              avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
+                              typeIerror = input$sig_level)  
+        
+        
+    })  
+    
+    output$power_summary <- DT::renderDataTable({pow_summary()}) 
     
     power_history <- reactiveValues(avail_pattern = c(), 
                                     avail_init = c(), 
@@ -482,6 +555,9 @@ shinyServer(function(input,output,session){
                                     sample_size = c(),
                                     power = c(),
                                     sig_level = c())
+    
+    
+
 
     observeEvent(input$button_calculate_power, {
         power_history$avail_pattern <- c(power_history$avail_pattern, 
