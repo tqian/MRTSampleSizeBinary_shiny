@@ -90,6 +90,24 @@ shinyServer(function(input,output,session){
     })
     
     
+    # trying this outside
+    rand_prob <- reactive({
+    
+        if (input$rand_prob_choices == "constant"){
+            rand_prob <- rep(input$rand_prob_const, total_decision_points())
+            rv$rp_shape <- "constant"
+        } else if (input$rand_prob_choices == "tv_days") {
+            rand_prob <- rep(P_inter_days()$Randomization.Probability, 
+                         each = input$occ_per_day)
+            rv$rp_shape <- "time-varying"
+        } else if (input$rand_prob_choices == "tv_dec_pts") {
+            rand_prob <- P_inter_dec()$Randomization.Probability
+            rv$rp_shape <- "time-varying"
+        }
+        
+        rand_prob
+    })
+    
     #### Templates for randomization probability #####
     
     days_df <- reactive({
@@ -303,7 +321,8 @@ shinyServer(function(input,output,session){
                           each = input$occ_per_day)
             
             print('hello days')
-            
+            print(length(result))
+            print(total_decision_points())
             validate(need(length(result)==total_decision_points()),
                      "Error: Number of days does not match")
             
@@ -311,10 +330,10 @@ shinyServer(function(input,output,session){
             
             
         } else if (input$avail_choices == "tv_dec_pts") {
-            result <- ea_inter_dec()$Expected.Availability
-            print(result)
             print('hello dec pts')
-            print(length(result))
+            
+            result <- ea_inter_dec()$Expected.Availability
+
             validate(need(length(result)==total_decision_points()),
                      "Error: Number of decision points does not match")
             
@@ -329,6 +348,12 @@ shinyServer(function(input,output,session){
         )
         result
     })
+    
+    
+    
+    
+
+    
     
     ### Plot the graph for expected availability ###
     
@@ -356,28 +381,40 @@ shinyServer(function(input,output,session){
     ea_inter_days <- reactive({     
         
         inFile <- input$file0
+        #inFile <- input$file0a
         
+    
         if (is.null(inFile)) {
             return(NULL)
         }
         print('ea inter days')
-        print("Expected.Availability" %in% colnames(read.csv(inFile$datapath, header = TRUE)))
+        print('file0a')
+        print(input$file0a)
+        print('file0')
+        print(input$file0)
 
+        print('ea inter dec')
+        print(ea_inter_dec())
+        print(input$file0)
         read.csv(inFile$datapath, header = TRUE)
         
     
     })
     
-    ea_inter_dec <- reactive({    
+    ea_inter_dec <- reactive({     
         
         inFile <- input$file0a
+        #inFile <- input$file0a
         
         if (is.null(inFile)) {
             return(NULL)
         }
-        print('ea inter dec')
-        print(read.csv(inFile$datapath, header = TRUE))
+        print('ea inter ddec')
+        
+        
         read.csv(inFile$datapath, header = TRUE)
+        
+        
     })
     
     
@@ -469,35 +506,22 @@ shinyServer(function(input,output,session){
         # Need to think more carefully, because there are three sources of rand. prob.
         # rand_prob <- rep(input$rand_prob_const, total_decision_points())
         # 
-        # if (!is.null(input$file1)) {
+
+        
+        # if (input$rand_prob_choices == "constant"){
+        #     rand_prob <- rep(input$rand_prob_const, total_decision_points())
+        #     rv$rp_shape <- "constant"
+        # } else if (input$rand_prob_choices == "tv_days") {
         #     rand_prob <- rep(P_inter_days()$Randomization.Probability, 
         #                      each = input$occ_per_day)
-        #     
-        #     if(length(rand_prob) != total_decision_points()){
-        #         stop("length of random probabilities does not match")
-        #     }
-        #     
-        #     # below is the old, buggy code
-        #     #rand_prob <- rep(P_inter_days()$Randomization.Probability, 
-        #     #                 each = input$occ_per_day)
-        # }
-        # 
-        # if (!is.null(input$file2)) {
+        #     rv$rp_shape <- "time-varying"
+        # } else if (input$rand_prob_choices == "tv_dec_pts") {
         #     rand_prob <- P_inter_dec()$Randomization.Probability
+        #     rv$rp_shape <- "time-varying"
         # }
-        
-        if (input$rand_prob_choices == "constant"){
-            rand_prob <- rep(input$rand_prob_const, total_decision_points())
-            rv$rp_shape <- "constant"
-        } else if (input$rand_prob_choices == "tv_days") {
-            rand_prob <- rep(P_inter_days()$Randomization.Probability, 
-                             each = input$occ_per_day)
-            rv$rp_shape <- "time-varying"
-        } else if (input$rand_prob_choices == "tv_dec_pts") {
-            rand_prob <- P_inter_dec()$Randomization.Probability
-            rv$rp_shape <- "time-varying"
-        }
-        
+       
+        print(rand_prob()) 
+        rv$ss_clicked <- TRUE
         calculate_mrt_bin_samplesize_wrapper(p10 = p10(),
                                              pT0 = pT0(),
                                              p11 = p11(),
@@ -505,7 +529,7 @@ shinyServer(function(input,output,session){
                                              total_T = total_decision_points(),
                                              alpha_shape = input$alpha_choices,
                                              beta_shape = input$beta_choices,
-                                             rand_prob = rand_prob,  ## p_t
+                                             rand_prob = rand_prob(),  ## p_t
                                              avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
                                              typeIerror = input$sig_level,
                                              power = input$power)
@@ -537,18 +561,18 @@ shinyServer(function(input,output,session){
         # The determination of randomization probability is not well-implemented.
         # Need to think more carefully, because there are three sources of rand. prob.
         
-        if (input$rand_prob_choices == "constant"){
-            rand_prob <- rep(input$rand_prob_const, total_decision_points())
-            rv$rp_shape <- "constant"
-        } else if (input$rand_prob_choices == "tv_days") {
-            rand_prob <- rep(P_inter_days()$Randomization.Probability, 
-                             each = input$occ_per_day)
-            rv$rp_shape <- "time-varying"
-        } else if (input$rand_prob_choices == "tv_dec_pts") {
-            rand_prob <- P_inter_dec()$Randomization.Probability
-            rv$rp_shape <- "time-varying"
-        }
-        
+        # if (input$rand_prob_choices == "constant"){
+        #     rand_prob <- rep(input$rand_prob_const, total_decision_points())
+        #     rv$rp_shape <- "constant"
+        # } else if (input$rand_prob_choices == "tv_days") {
+        #     rand_prob <- rep(P_inter_days()$Randomization.Probability, 
+        #                      each = input$occ_per_day)
+        #     rv$rp_shape <- "time-varying"
+        # } else if (input$rand_prob_choices == "tv_dec_pts") {
+        #     rand_prob <- P_inter_dec()$Randomization.Probability
+        #     rv$rp_shape <- "time-varying"
+        # }
+        # 
         
         
         calculate_mrt_bin_power_wrapper(p10 = p10(),
@@ -558,7 +582,7 @@ shinyServer(function(input,output,session){
                                         total_T = total_decision_points(),
                                         alpha_shape = input$alpha_choices,
                                         beta_shape = input$beta_choices,
-                                        rand_prob = rand_prob,  ## p_t
+                                        rand_prob = rand_prob(),  ## p_t
                                         avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
                                         typeIerror = input$sig_level,
                                         sample_size = input$sample_size)
@@ -693,18 +717,18 @@ shinyServer(function(input,output,session){
         # Need to think more carefully, because there are three sources of rand. prob.
         
         rv$ss_clicked <- TRUE
-        
-        if (input$rand_prob_choices == "constant"){
-            rand_prob <- rep(input$rand_prob_const, total_decision_points())
-            rv$rp_shape <- "constant"
-        } else if (input$rand_prob_choices == "tv_days") {
-            rand_prob <- rep(P_inter_days()$Randomization.Probability, 
-                             each = input$occ_per_day)
-            rv$rp_shape <- "time-varying"
-        } else if (input$rand_prob_choices == "tv_dec_pts") {
-            rand_prob <- P_inter_dec()$Randomization.Probability
-            rv$rp_shape <- "time-varying"
-        }
+        # 
+        # if (input$rand_prob_choices == "constant"){
+        #     rand_prob <- rep(input$rand_prob_const, total_decision_points())
+        #     rv$rp_shape <- "constant"
+        # } else if (input$rand_prob_choices == "tv_days") {
+        #     rand_prob <- rep(P_inter_days()$Randomization.Probability, 
+        #                      each = input$occ_per_day)
+        #     rv$rp_shape <- "time-varying"
+        # } else if (input$rand_prob_choices == "tv_dec_pts") {
+        #     rand_prob <- P_inter_dec()$Randomization.Probability
+        #     rv$rp_shape <- "time-varying"
+        # }
         
 
         
@@ -716,7 +740,7 @@ shinyServer(function(input,output,session){
                                 total_T = total_decision_points(),
                                 alpha_shape = input$alpha_choices,
                                 beta_shape = input$beta_choices,
-                                rand_prob = rand_prob,  ## p_t
+                                rand_prob = rand_prob(),  ## p_t
                                 avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
                                 typeIerror = input$sig_level)  
         
@@ -732,17 +756,17 @@ shinyServer(function(input,output,session){
         # The determination of randomization probability is not well-implemented.
         # Need to think more carefully, because there are three sources of rand. prob.
         rv$ss_clicked <- TRUE        
-        if (input$rand_prob_choices == "constant"){
-            rand_prob <- rep(input$rand_prob_const, total_decision_points())
-            rv$rp_shape <- "constant"
-        } else if (input$rand_prob_choices == "tv_days") {
-            rand_prob <- rep(P_inter_days()$Randomization.Probability, 
-                             each = input$occ_per_day)
-            rv$rp_shape <- "time-varying"
-        } else if (input$rand_prob_choices == "tv_dec_pts") {
-            rand_prob <- P_inter_dec()$Randomization.Probability
-            rv$rp_shape <- "time-varying"
-        }
+        # if (input$rand_prob_choices == "constant"){
+        #     rand_prob <- rep(input$rand_prob_const, total_decision_points())
+        #     rv$rp_shape <- "constant"
+        # } else if (input$rand_prob_choices == "tv_days") {
+        #     rand_prob <- rep(P_inter_days()$Randomization.Probability, 
+        #                      each = input$occ_per_day)
+        #     rv$rp_shape <- "time-varying"
+        # } else if (input$rand_prob_choices == "tv_dec_pts") {
+        #     rand_prob <- P_inter_dec()$Randomization.Probability
+        #     rv$rp_shape <- "time-varying"
+        # }
         
         
         power_vs_n_plot_wrapper(p10 = p10(),
@@ -752,7 +776,7 @@ shinyServer(function(input,output,session){
                                 total_T = total_decision_points(),
                                 alpha_shape = input$alpha_choices,
                                 beta_shape = input$beta_choices,
-                                rand_prob = rand_prob,  ## p_t
+                                rand_prob = rand_prob(),  ## p_t
                                 avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
                                 typeIerror = input$sig_level)  
         
@@ -768,17 +792,17 @@ shinyServer(function(input,output,session){
         # The determination of randomization probability is not well-implemented.
         # Need to think more carefully, because there are three sources of rand. prob.
         rv$power_clicked <- TRUE
-        if (input$rand_prob_choices == "constant"){
-            rand_prob <- rep(input$rand_prob_const, total_decision_points())
-            rv$rp_shape <- "constant"
-        } else if (input$rand_prob_choices == "tv_days") {
-            rand_prob <- rep(P_inter_days()$Randomization.Probability, 
-                             each = input$occ_per_day)
-            rv$rp_shape <- "time-varying"
-        } else if (input$rand_prob_choices == "tv_dec_pts") {
-            rand_prob <- P_inter_dec()$Randomization.Probability
-            rv$rp_shape <- "time-varying"
-        }
+        # if (input$rand_prob_choices == "constant"){
+        #     rand_prob <- rep(input$rand_prob_const, total_decision_points())
+        #     rv$rp_shape <- "constant"
+        # } else if (input$rand_prob_choices == "tv_days") {
+        #     rand_prob <- rep(P_inter_days()$Randomization.Probability, 
+        #                      each = input$occ_per_day)
+        #     rv$rp_shape <- "time-varying"
+        # } else if (input$rand_prob_choices == "tv_dec_pts") {
+        #     rand_prob <- P_inter_dec()$Randomization.Probability
+        #     rv$rp_shape <- "time-varying"
+        # }
         
         
         psw_out <-power_summary_wrapper(p10 = p10(),
@@ -788,7 +812,7 @@ shinyServer(function(input,output,session){
                                         total_T = total_decision_points(),
                                         alpha_shape = input$alpha_choices,
                                         beta_shape = input$beta_choices,
-                                        rand_prob = rand_prob,  ## p_t
+                                        rand_prob = rand_prob(),  ## p_t
                                         avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
                                         typeIerror = input$sig_level)  
        
@@ -805,18 +829,18 @@ shinyServer(function(input,output,session){
         
         rv$power_clicked <- TRUE
         
-        if (input$rand_prob_choices == "constant"){
-            rand_prob <- rep(input$rand_prob_const, total_decision_points())
-            rv$rp_shape <- "constant"
-        } else if (input$rand_prob_choices == "tv_days") {
-            rand_prob <- rep(P_inter_days()$Randomization.Probability, 
-                             each = input$occ_per_day)
-            rv$rp_shape <- "time-varying"
-        } else if (input$rand_prob_choices == "tv_dec_pts") {
-            rand_prob <- P_inter_dec()$Randomization.Probability
-            rv$rp_shape <- "time-varying"
-        }
-        
+        # if (input$rand_prob_choices == "constant"){
+        #     rand_prob <- rep(input$rand_prob_const, total_decision_points())
+        #     rv$rp_shape <- "constant"
+        # } else if (input$rand_prob_choices == "tv_days") {
+        #     rand_prob <- rep(P_inter_days()$Randomization.Probability, 
+        #                      each = input$occ_per_day)
+        #     rv$rp_shape <- "time-varying"
+        # } else if (input$rand_prob_choices == "tv_dec_pts") {
+        #     rand_prob <- P_inter_dec()$Randomization.Probability
+        #     rv$rp_shape <- "time-varying"
+        # }
+        # 
         
         power_summary_wrapper(p10 = p10(),
                               pT0 = pT0(),
@@ -825,7 +849,7 @@ shinyServer(function(input,output,session){
                               total_T = total_decision_points(),
                               alpha_shape = input$alpha_choices,
                               beta_shape = input$beta_choices,
-                              rand_prob = rand_prob,  ## p_t
+                              rand_prob = rand_prob(),  ## p_t
                               avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
                               typeIerror = input$sig_level)  
         

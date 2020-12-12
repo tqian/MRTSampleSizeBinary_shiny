@@ -108,14 +108,7 @@ shinyUI(fluidPage(
                                        available, activity suggestions are delivered on average 2 time points per day. "),
                                
                                p(strong("Availability")), 
-                               p("At some decision times, feasibility, ethics or burden considerations mean that the pariticipant is unavailable for treatment, 
-and thus treatment should not be delivered. For example, if sensors indicate that the participant is likely driving a car or 
-the participantis currently walking, then the activity message should not be sent. Other examples of when participants are 
-unavailable for treatment include, in the alcohol recovery setting, a ‘warning’ treatment would only be potentially provided
-when sensors indicate that the participant is within 10 feet of a high-risk location or a treatment might only be provided 
-if the participant reports a high level of craving.  Individuals may be unavailable for treatmentby choice. For example, 
-the application on the phone should permit the user to turn off the activity messages for some amount of time; this option 
-is considered critical to maintaining participant buy-in and engagement."),
+                               p("At some decision times, feasibility, ethics or burden considerations mean that the pariticipant is unavailable for treatment, and thus treatment should not be delivered. For example, if sensors indicate that the participant is likely driving a car or jthe participantis currently walking, then the activity message should not be sent. Other examples of when participants are unavailable for treatment include, in the alcohol recovery setting, a ‘warning’ treatment would only be potentially provided when sensors indicate that the participant is within 10 feet of a high-risk location or a treatment might only be provided if the participant reports a high level of craving.  Individuals may be unavailable for treatmentby choice. For example, the application on the phone should permit the user to turn off the activity messages for some amount of time; this option is considered critical to maintaining participant buy-in and engagement."),
                                
                                
                                p(strong("Additional Consideration:")), 
@@ -146,10 +139,14 @@ is considered critical to maintaining participant buy-in and engagement."),
     br(),
     fluidRow(
       column(3,
-             numericInput("days",label = "Duration of the Study (Days)",value = 30)
+             numericInput("days",
+                          label = "Duration of the Study (Days)",
+                          value = 30)
       ),
       column(3,
-             numericInput("occ_per_day",label = "Number of Decision Time Points per Day",value = 1)
+             numericInput("occ_per_day",
+                          label = "Number of Decision Time Points per Day",
+                          value = 1)
       ),
       column(6,
              textOutput("setting_warning")  ### output warnings when you type in wrong format for
@@ -170,8 +167,8 @@ is considered critical to maintaining participant buy-in and engagement."),
     br(),
     fluidRow(
       column(5,
-             ### Three patterns of expected availability to choose from 
-             ### quadratic, constant and linear
+             ### Two patterns of expected availability to choose from 
+             ### constant and linear
              selectizeInput("avail_choices", 
                             label = "Select one of the following patterns for the expected availability", 
                             choices=list("Constant"="constant",
@@ -204,7 +201,7 @@ is considered critical to maintaining participant buy-in and engagement."),
                                         'Choose a .csv file of time-varying expected availabilitys (Days) to upload',
                                         accept = c('.csv')
                               ),
-                              p('If you want a template of .csv file ,',
+                              p('If you want a template of a .csv file ,',
                                 'you can first download the template and then try uploading them.'
                               ),
                               downloadButton("ea_days_template", "Template"),
@@ -216,15 +213,15 @@ is considered critical to maintaining participant buy-in and engagement."),
              
              conditionalPanel(condition="input.avail_choices == 'tv_dec_pts' ",
                               fileInput('file0a',
-                                        'Choose a .csv file of time-varying expected availabilitys (Decision Times) to upload',
+                                        'Choose a .csv file of time-varying expected availability (Decision Times) to upload',
                                         accept = c('.csv')
                               ),
-                              p('If you want a template of .csv file ,',
-                                'you can first download the template and then try uploading them.'
+                              p('If you want a template of a .csv file ,',
+                                'you can first download this template and then try uploading them.'
                               ),
                               downloadButton("ea_dec_pts_template", "Template"),
-                              p('In the sample file, the expected availability is contantly 0.7'),
-                              p('The number of inputs for this file should be equal to the number of days.'),
+                              p('In the sample file, the expected availability is contantly 0.7.'),
+                              p('The number of inputs for this file should be equal to the number of decision points.'),
                               p('Showing the first 5 rows of the uploaded file. '),
                               dataTableOutput('ea_inter_table_dec_pts')
              ),
