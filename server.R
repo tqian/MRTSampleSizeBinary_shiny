@@ -26,7 +26,7 @@ shinyServer(function(input,output,session){
     #### Reading the file of decision times ###
     P_inter_dec <- reactive({    
         
-        inFile <- input$file1
+        inFile <- input$file2
         
         if (is.null(inFile))
             return(NULL)
@@ -36,16 +36,16 @@ shinyServer(function(input,output,session){
     
     #### Output the first five rows of the table reading from the file with respect to decision times 
     ### and output warnings if the format of the file is not correct
-    output$P_inter_table_dec <- renderTable({       
+    output$P_inter_table_dec <- renderDataTable({       
         delta <- as.vector(P_inter_dec()$Randomization.Probability)
         validate(
-            need(!is.null(input$file1), "Warning: No file is uploaded"),
-            need(is.null(input$file1) || length(data) == input$days * input$occ_per_day, 
+            need(!is.null(input$file2), "Warning: No file is uploaded"),
+            need(is.null(input$file2) || length(delta) == input$days * input$occ_per_day, 
                  "Error: the number of decision times doesn't match."),
-            need(is.null(input$file1) || max(data) <= 1, 
+            need(is.null(input$file2) || max(delta) <= 1, 
                  "Error: some value of randomization prob
                  ability is bigger than 1"),
-            need(is.null(input$file1) || min(data) >= 0, 
+            need(is.null(input$file2) || min(delta) >= 0, 
                  "Error: some value of randomization probability is less than 0")
         )
         head(P_inter_dec(), n = 5)
@@ -54,33 +54,35 @@ shinyServer(function(input,output,session){
     ### Reading the file with respect to days ###
     P_inter_days <- reactive({     
         
-        inFile <- input$file2
+        inFile <- input$file1
         
-        if (is.null(inFile))
+        if (is.null(inFile)) {
             return(NULL)
+        }
         
         read.csv(inFile$datapath, header = TRUE)
     })
     
     #### Output the first five rows of the table reading from the file with respect to days
     ### and output warnings if the format of the file is not correct
-    output$P_inter_table_days <- renderTable({      #### Output the first five rows of the table reading from the file for days
+    #### Output the first five rows of the table reading from the file for days
+    output$P_inter_table_days <- renderDataTable({      
         delta <- as.vector(P_inter_days()$Randomization.Probability)
         
         validate(
-            need(!is.null(input$file2), "Warning: No file is uploaded"),
-            need(is.null(input$file2) || length(data) == input$days , 
+            need(!is.null(input$file1), "Warning: No file is uploaded"),
+            need(is.null(input$file1) || length(delta) == input$days , 
                  "Error: the number of days doesn't match."),
-            need(is.null(input$file2) || max(data) <= 1, 
+            need(is.null(input$file1) || max(delta) <= 1, 
                  "Error: some value of randomization probability is bigger than 1"),
-            need(is.null(input$file2) || min(data) >= 0, 
+            need(is.null(input$file1) || min(delta) >= 0, 
                  "Error: some value of randomization probability is less than 0")
         )
         
         head(P_inter_days(), n = 5)
     })
     
-
+    
     #### Templates #####
     
     days_df <- reactive({
@@ -90,7 +92,7 @@ shinyServer(function(input,output,session){
         temp_df
     })
     
-
+    
     output$days_template <- downloadHandler(
         filename = function() {
             paste0("rand_prob_", input$days, "_days.csv")
@@ -111,10 +113,10 @@ shinyServer(function(input,output,session){
     output$dec_pts_template <- downloadHandler(
         filename = function() {
             paste0("rand_prob_", 
-                  round(input$days*input$occ_per_day), 
-                  "_dec_pts_over_",
-                  input$days,
-                  "days.csv")
+                   round(input$days*input$occ_per_day), 
+                   "_dec_pts_over_",
+                   input$days,
+                   "days.csv")
         },
         content = function(file){
             write.csv(dec_pts_df(), file, row.names=FALSE)
@@ -129,14 +131,14 @@ shinyServer(function(input,output,session){
         # This part should have not effect on the UI.
         result <- 0.5
         if (input$alpha_choices == "constant") {
-        
+            
             validate(
                 need(input$alpha_constant_mean > 0, 
                      "Error: Please specify the baseline success probability greater than 0")
             )
-        
+            
             result <- rep(input$alpha_constant_mean, total_decision_points())
-        
+            
         } else if (input$alpha_choices == "loglinear") {
             
             validate(
@@ -184,14 +186,14 @@ shinyServer(function(input,output,session){
         # This part should have not effect on the UI.
         result <- 1
         if (input$beta_choices == "constant") {
-        
+            
             validate(
                 need(input$beta_constant_mean > 0, 
                      "Error: Please specify the proximal treatment effect greater than 0")
             )
-        
+            
             result <- rep(input$beta_constant_mean, total_decision_points())
-        
+            
         } else if (input$beta_choices == "loglinear") {
             validate(
                 need(input$beta_loglinear_initial > 0, 
@@ -199,12 +201,12 @@ shinyServer(function(input,output,session){
                 need(input$beta_loglinear_final > 0, 
                      "Error: Please specify the final value of proximal treatment effect greater than 0")
             )
-        
+            
             initial_log <- log(input$beta_loglinear_initial)
             final_log <- log(input$beta_loglinear_final)
             result_log <- seq(from = initial_log, to = final_log, 
                               length.out = total_decision_points())
-        
+            
             result <- exp(result_log)
         }
         validate(
@@ -271,7 +273,7 @@ shinyServer(function(input,output,session){
             )
             
             result <- rep(input$avail_constant_mean, total_decision_points())
-        
+            
         } else if (input$avail_choices == "linear") {
             
             validate(
@@ -324,6 +326,14 @@ shinyServer(function(input,output,session){
         if (!is.null(input$file1)) {
             rand_prob <- rep(P_inter_days()$Randomization.Probability, 
                              each = input$occ_per_day)
+            
+            if(length(rand_prob) != total_decision_points()){
+                stop("length of random probabilities does not match")
+            }
+            
+            # below is the old, buggy code
+            #rand_prob <- rep(P_inter_days()$Randomization.Probability, 
+            #                 each = input$occ_per_day)
         }
         
         if (!is.null(input$file2)) {
@@ -478,7 +488,7 @@ shinyServer(function(input,output,session){
                    "Avail Final" = sample_size_history$avail_final)
     })
     
-
+    
     ###### Power vs Sample Size plot #####
     pow_vs_n_plot1 <- eventReactive(input$button_calculate_sample_size, {
         # The determination of randomization probability is not well-implemented.
@@ -507,8 +517,8 @@ shinyServer(function(input,output,session){
         
         
     })    
-
-
+    
+    
     output$power_vs_n1 <- renderPlot({
         pow_vs_n_plot1()
     })
@@ -550,31 +560,37 @@ shinyServer(function(input,output,session){
         # The determination of randomization probability is not well-implemented.
         # Need to think more carefully, because there are three sources of rand. prob.
         rand_prob <- rep(input$rand_prob_const, total_decision_points())
-        
+        print(rand_prob)
         if (!is.null(input$file1)) {
+            print('file1')
             rand_prob <- rep(P_inter_days()$Randomization.Probability, 
                              each = input$occ_per_day)
         }
         
         if (!is.null(input$file2)) {
+            print('file2')
             rand_prob <- P_inter_dec()$Randomization.Probability
         }
-        
-        power_summary_wrapper(p10 = p10(),
-                              pT0 = pT0(),
-                              p11 = p11(),
-                              pT1 = pT1(),
-                              total_T = total_decision_points(),
-                              alpha_shape = input$alpha_choices,
-                              beta_shape = input$beta_choices,
-                              rand_prob = rand_prob,  ## p_t
-                              avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
-                              typeIerror = input$sig_level)  
-        
+        print(length(rand_prob))
+        print("hi")
+        print(rand_prob)
+        print(P_inter_days()$Randomization.Probability)
+        psw_out <-power_summary_wrapper(p10 = p10(),
+                                        pT0 = pT0(),
+                                        p11 = p11(),
+                                        pT1 = pT1(),
+                                        total_T = total_decision_points(),
+                                        alpha_shape = input$alpha_choices,
+                                        beta_shape = input$beta_choices,
+                                        rand_prob = rand_prob,  ## p_t
+                                        avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
+                                        typeIerror = input$sig_level)  
+        print(psw_out)
+        return(psw_out)
         
     })  
     
-    output$power_summary1 <- DT::renderDataTable({pow_summary1()}) 
+    output$power_summary1 <- DT::renderDataTable({ pow_summary1() }) 
     
     
     pow_summary2 <- eventReactive(input$button_calculate_power, {
@@ -606,8 +622,8 @@ shinyServer(function(input,output,session){
     })  
     
     output$power_summary2 <- DT::renderDataTable({pow_summary2()}) 
-
-
+    
+    
     
     power_history <- reactiveValues(avail_pattern = c(), 
                                     avail_init = c(), 
@@ -622,7 +638,7 @@ shinyServer(function(input,output,session){
                                     sample_size = c(),
                                     power = c(),
                                     sig_level = c())
-
+    
     observeEvent(input$button_calculate_power, {
         power_history$avail_pattern <- c(power_history$avail_pattern, 
                                          input$avail_choices)

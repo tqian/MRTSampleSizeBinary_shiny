@@ -249,7 +249,7 @@ is considered critical to maintaining participant buy-in and engagement."),
                                                        "Respect to Decision Times" = "re_dec")), ### two choices for uploading files ###
                                         ### uploading file respect to decision times ###
                                         conditionalPanel(condition="input.numbers =='re_dec'",
-                                                         fileInput('file1', 'Choose a .csv file of time-varying randomization probability (Decision Times) to upload',
+                                                         fileInput('file2', 'Choose a .csv file of time-varying randomization probability (Decision Times) to upload',
                                                                    accept = c(
                                                                        '.csv'
                                                                    )
@@ -257,7 +257,7 @@ is considered critical to maintaining participant buy-in and engagement."),
                                         ),
                                         ###uploading file respect to dyas ###
                                         conditionalPanel(condition="input.numbers =='re_days'",
-                                                         fileInput('file2', 'Choose a .csv file of time-varying randomization probability (Days) to upload',
+                                                         fileInput('file1', 'Choose a .csv file of time-varying randomization probability (Days) to upload',
                                                                    accept = c(
                                                                        '.csv'
                                                                    )
@@ -290,11 +290,11 @@ is considered critical to maintaining participant buy-in and engagement."),
                                         ### showing the first 5 rows of the uploaded file ###
                                         conditionalPanel(condition="input.numbers =='re_dec'",
                                                          p('Showing the first 5 rows of the uploaded file. '),
-                                                         tableOutput('P_inter_table_dec')
+                                                         dataTableOutput('P_inter_table_dec')
                                         ),
                                         conditionalPanel(condition="input.numbers =='re_days'",
                                                          p('Showing the first 5 rows of the uploaded file. '),
-                                                         tableOutput('P_inter_table_days')
+                                                         dataTableOutput('P_inter_table_days')
                                         )
                                  )
                              )  
@@ -473,7 +473,7 @@ is considered critical to maintaining participant buy-in and engagement."),
                                       uiOutput("sample_size"),
                                       plotOutput("power_vs_n1"),
                                       dataTableOutput("power_summary1")
-                     ),
+                   ),
                      
                      ##### choice to calculate sample size(action buttons) #####
                      
@@ -483,8 +483,8 @@ is considered critical to maintaining participant buy-in and engagement."),
                                       plotOutput("power_vs_n2"),
                                       dataTableOutput("power_summary2")                                      
                      ),
-                     
-                     ),
+
+            ),
             tabPanel("History",
                      conditionalPanel(condition = "input.radio_choices == 'choice_sample_size'",
                                       # fluidRow(
