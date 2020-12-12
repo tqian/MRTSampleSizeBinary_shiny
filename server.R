@@ -6,6 +6,10 @@ shinyServer(function(input,output,session){
     
     rv <- reactiveValues(data=NULL)
     
+    rv$ss_clicked <- FALSE
+
+    rv$power_clicked <- FALSE
+    
     ### Calculate total number of decision points based on # Days and # Decision points per day
     
     total_decision_points <- reactive({
@@ -441,20 +445,22 @@ shinyServer(function(input,output,session){
     
     ### Create history table for power calculation and sample size calculation
     
-    sample_size_history <- reactiveValues(avail_pattern = c(), 
-                                          avail_init = c(), 
-                                          avail_final = c(),
-                                          rand_prob_shape = c(),
-                                          alpha_shape = c(), 
-                                          p10 = c(), 
-                                          pT0 = c(),
-                                          beta_shape = c(), 
-                                          p11 = c(), 
-                                          pT1 = c(),
-                                          sample_size = c(),
-                                          power = c(),
-                                          sig_level = c(),
-                                          tot_dec_pts = c())
+    # sample_size_history <- reactiveValues(avail_pattern = c(), 
+    #                                       avail_init = c(), 
+    #                                       avail_final = c(),
+    #                                       rand_prob_shape = c(),
+    #                                       alpha_shape = c(), 
+    #                                       p10 = c(), 
+    #                                       pT0 = c(),
+    #                                       beta_shape = c(), 
+    #                                       p11 = c(), 
+    #                                       pT1 = c(),
+    #                                       sample_size = c(),
+    #                                       power = c(),
+    #                                       sig_level = c(),
+    #                                       tot_dec_pts = c())
+    
+    sample_size_history <- reactiveValues(data=NULL)
     
     observeEvent(input$button_calculate_sample_size, {
         sample_size_history$avail_pattern <- c(sample_size_history$avail_pattern, 
@@ -496,9 +502,9 @@ shinyServer(function(input,output,session){
                                              total_decision_points())
     })
     
-    output$sample_size_history_table <- renderTable({
-
-        ssht <- data.frame(
+   # ss_hist_tab <- renderDataTable({
+    #ss_hist_tab <- renderDataTable({
+        samp_size_hist <- reactive({data.frame(
             "Sample Size" = sample_size_history$sample_size,
                    "Power" = sample_size_history$power,
                    "Sig Level" = sample_size_history$sig_level,
@@ -512,15 +518,42 @@ shinyServer(function(input,output,session){
                    "pT1" = sample_size_history$pT1,
                    "Avail Pattern" = sample_size_history$avail_pattern,
                    "Avail Init" = sample_size_history$avail_init,
-                   "Avail Final" = sample_size_history$avail_final)
-        ssht
+                   "Avail Final" = sample_size_history$avail_final)})
+        #ssht
+    #})
+   
+
+    output$sample_size_history_table <- renderDataTable({samp_size_hist()})
+    
+
+    
+    output$samp_size_dl <- downloadHandler(
+        filename = function() {
+            paste0("sample_size_history.csv")
+        },
+        content = function(file){
+            write.csv(samp_size_hist(), file, row.names=FALSE)
+        }
+    )
+    
+    output$download_ss <- renderUI({
+        if(rv$ss_clicked) {
+            downloadButton('samp_size_dl', 'Sample Size History')
+        }
     })
+    
+    #output$sample_size_history_table <- renderDataTable({ss_hist_tab()})
+
+    
+    
     
     
     ###### Power vs Sample Size plot #####
     pow_vs_n_plot1 <- eventReactive(input$button_calculate_sample_size, {
         # The determination of randomization probability is not well-implemented.
         # Need to think more carefully, because there are three sources of rand. prob.
+        
+        rv$ss_clicked <- TRUE
         
         if (input$rand_prob_choices == "constant"){
             rand_prob <- rep(input$rand_prob_const, total_decision_points())
@@ -557,7 +590,7 @@ shinyServer(function(input,output,session){
     pow_vs_n_plot2 <- eventReactive(input$button_calculate_power, {
         # The determination of randomization probability is not well-implemented.
         # Need to think more carefully, because there are three sources of rand. prob.
-        
+        rv$ss_clicked <- TRUE        
         if (input$rand_prob_choices == "constant"){
             rand_prob <- rep(input$rand_prob_const, total_decision_points())
             rv$rp_shape <- "constant"
@@ -593,7 +626,7 @@ shinyServer(function(input,output,session){
     pow_summary1 <- eventReactive(input$button_calculate_sample_size, {
         # The determination of randomization probability is not well-implemented.
         # Need to think more carefully, because there are three sources of rand. prob.
-        
+        rv$power_clicked <- TRUE
         if (input$rand_prob_choices == "constant"){
             rand_prob <- rep(input$rand_prob_const, total_decision_points())
             rv$rp_shape <- "constant"
@@ -628,6 +661,8 @@ shinyServer(function(input,output,session){
     pow_summary2 <- eventReactive(input$button_calculate_power, {
         # The determination of randomization probability is not well-implemented.
         # Need to think more carefully, because there are three sources of rand. prob.
+        
+        rv$power_clicked <- TRUE
         
         if (input$rand_prob_choices == "constant"){
             rand_prob <- rep(input$rand_prob_const, total_decision_points())
@@ -701,7 +736,7 @@ shinyServer(function(input,output,session){
                                          total_decision_points())
     })
     
-    output$power_history_table <- renderDataTable({
+    pow_history_table <- reactive({
 
         pht <- data.frame("Sample Size" = power_history$sample_size,
                    "Power" = power_history$power,
@@ -721,4 +756,22 @@ shinyServer(function(input,output,session){
 
         pht
     })
+    
+    output$power_history_table <- renderDataTable({pow_history_table()})
+    
+    output$pow_dl <- downloadHandler(
+        filename = function() {
+            paste0("power_history.csv")
+        },
+        content = function(file){
+            write.csv(pow_history_tab(), file, row.names=FALSE)
+        }
+    )
+    
+    output$download_pow <- renderUI({
+        if(rv$power_clicked) {
+            downloadButton('pow_dl', 'Power History')
+        }
+    })
+    
 })

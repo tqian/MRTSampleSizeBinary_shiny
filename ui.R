@@ -227,12 +227,11 @@ is considered critical to maintaining participant buy-in and engagement."),
     
     
     
-    ### eliot's tvrp ###
     
-    ### Expected Availability ####
+    ### Randomization Probability ####
     fluidRow(
       column(6,
-             h3("Eliot Random Probability")),
+             h3("Randomization Probability")),
       column(6,
              h3(paste("")))
     ),
@@ -269,7 +268,6 @@ is considered critical to maintaining participant buy-in and engagement."),
                                 'you can first download the template and then try uploading them.'
                               ),
                               downloadButton("days_template", "Template"),
-                              #actionButton("clear_days_template", "clear"),
                               p('In the sample file, the randomization probability is contantly 0.4'),
                               p('The number of inputs for this file should be equal to the number of days.'),
                               p('Showing the first 5 rows of the uploaded file. '),
@@ -286,7 +284,6 @@ is considered critical to maintaining participant buy-in and engagement."),
                                 'you can first download the template and then try uploading them.'
                               ),
                               downloadButton("dec_pts_template", "Template"),
-                              #actionButton("clear_dec_template", "clear"),
                               p('In the sample file, the randomization probability is contantly 0.4'),
                               p('The number of inputs for this file should be equal to the number of decision times.'),
                               p('Showing the first 5 rows of the uploaded file. '),
@@ -295,93 +292,6 @@ is considered critical to maintaining participant buy-in and engagement."),
       )
     ),
     tags$hr(),
-
-    ## end eliot's tvrp ###
-
-    
-    # #### time-varying randomization probability ####
-    # h3("Randomization Probability"),
-    # br(),
-    # tabsetPanel(id = "ranPro",
-    #             
-    #             ### Input of constant randomization probability ###
-    #             tabPanel("Constant",
-    #                      br(),
-    #                      fluidRow(
-    #                        column(6,
-    #                               numericInput("rand_prob_const",
-    #                                            label = "Constant Randomization Probability",
-    #                                            value = 0.4 )
-    #                        ),
-    #                        column(6,
-    #                               textOutput("setting_warning_ranPro") ### Output warnings when you type in wrong format for 
-    #                        )                                           ### "Value of Constant Randomization Probability"
-    #                      )
-    #             ),
-    #             ### Input of time-varying randomization probability ###
-    #             tabPanel("Time-varying",
-    #                      br(),
-    #                      fluidRow(
-    #                        column(4,
-    #                               radioButtons("numbers", 
-    #                                            "Number of Inputs:",
-    #                                            c("Respect to Days" = "re_days",
-    #                                              "Respect to Decision Times" = "re_dec")), ### two choices for uploading files ###
-    #                               ### uploading file respect to decision times ###
-    #                               conditionalPanel(condition="input.numbers =='re_dec'",
-    #                                                fileInput('file2', 
-    #                                                          'Choose a .csv file of time-varying randomization probability (Decision Times) to upload',
-    #                                                          accept = c('.csv')
-    #                                                )
-    #                               ),
-    #                               ###uploading file respect to dyas ###
-    #                               conditionalPanel(condition="input.numbers =='re_days'",
-    #                                                fileInput('file1', 
-    #                                                          'Choose a .csv file of time-varying randomization probability (Days) to upload',
-    #                                                          accept = c('.csv')
-    #                                                )
-    #                               )
-    #                        ),
-    #                        column(4,
-    #                               ### downloading the sample file for "respecting to days" and 
-    #                               ### "respecting to number of days"
-    #                               conditionalPanel(condition="input.numbers =='re_days'",
-    #                                                p('If you want a template of .csv file ,',
-    #                                                  'you can first download the template and then try uploading them.'
-    #                                                ),
-    #                                                downloadButton("days_template", "Template"),
-    #                                                #actionButton("clear_days_template", "clear"),
-    #                                                p('In the sample file, the randomization probability is contantly 0.4'),
-    #                                                p('The number of inputs for this file should be equal to the number of days.')
-    #                               ),
-    #                               conditionalPanel(condition="input.numbers =='re_dec'",
-    #                                                p('If you want a template of .csv file,',
-    #                                                  'you can first download the template and then try uploading them.'
-    #                                                ),
-    #                                                downloadButton("dec_pts_template", "Template"),
-    #                                                #actionButton("clear_dec_template", "clear"),
-    #                                                p('In the sample file, the randomization probability is contantly 0.4'),
-    #                                                p('The number of inputs for this file should be equal to the number of decision times.')
-    #                               )
-    #                               
-    #                               
-    #                        ),
-    #                        column(4,
-    #                               ### showing the first 5 rows of the uploaded file ###
-    #                               conditionalPanel(condition="input.numbers =='re_dec'",
-    #                                                p('Showing the first 5 rows of the uploaded file. '),
-    #                                                dataTableOutput('P_inter_table_dec')
-    #                               ),
-    #                               conditionalPanel(condition="input.numbers =='re_days'",
-    #                                                p('Showing the first 5 rows of the uploaded file. '),
-    #                                                dataTableOutput('P_inter_table_days')
-    #                               )
-    #                        )
-    #                      )  
-    #             )
-    # ),
-    # 
-    # tags$hr(),
     
     
     #### Specifying trend for Success Probability Null Curve ####
@@ -603,33 +513,14 @@ is considered critical to maintaining participant buy-in and engagement."),
       ),
       tabPanel("History",
                conditionalPanel(condition = "input.radio_choices == 'choice_sample_size'",
-                                # fluidRow(
-                                #     column(2,
-                                #            radioButtons("filetype_sample_size", "File type:",
-                                #                         choices = c("csv", "tsv"))
-                                #     ),
-                                #     column(3,
-                                #            br(),
-                                #            downloadButton('downloadData_size', 'Download')
-                                #     )
-                                # ),
-                                tableOutput("sample_size_history_table")
+                                dataTableOutput("sample_size_history_table"),
+                                uiOutput('download_ss')
                ),
                
-               ##### choice to calculate sample size(action buttons) #####
                
                conditionalPanel(condition = "input.radio_choices == 'choice_power'",
-                                # fluidRow(
-                                #     column(2,
-                                #            radioButtons("filetype_sample_size", "File type:",
-                                #                         choices = c("csv", "tsv"))
-                                #     ),
-                                #     column(3,
-                                #            br(),
-                                #            downloadButton('downloadData_size', 'Download')
-                                #     )
-                                # ),
-                                dataTableOutput("power_history_table")
+                                dataTableOutput("power_history_table"),
+                                uiOutput('download_pow')
                ))
     ),
     
