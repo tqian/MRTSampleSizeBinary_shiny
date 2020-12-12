@@ -271,7 +271,7 @@ shinyServer(function(input,output,session){
         # Initialize some value to avoid some internal error when running locally
         # This part should have not effect on the UI.
         result <- 0.5
-        result <- 0.5
+
         if (input$avail_choices == "constant") {
             
             validate(
@@ -280,6 +280,8 @@ shinyServer(function(input,output,session){
             )
             
             result <- rep(input$avail_constant_mean, total_decision_points())
+            
+            rv$ea_shape <- "constant"
             
         } else if (input$avail_choices == "linear") {
             
@@ -293,7 +295,31 @@ shinyServer(function(input,output,session){
             result <- seq(from = input$avail_linear_initial, 
                           to = input$avail_linear_final, 
                           length.out = total_decision_points())
-        } 
+            
+            rv$ea_shape <- "linear"
+            
+        } else if (input$avail_choices == "tv_days") {
+            result <- rep(ea_inter_days()$Expected.Availability, 
+                          each = input$occ_per_day)
+            
+            print('hello days')
+            
+            validate(need(length(result)==total_decision_points()),
+                     "Error: Number of days does not match")
+            
+            rv$ea_shape <- "time-varying"
+            
+            
+        } else if (input$avail_choices == "tv_dec_pts") {
+            result <- ea_inter_dec()$Expected.Availability
+            print(result)
+            print('hello dec pts')
+            print(length(result))
+            validate(need(length(result)==total_decision_points()),
+                     "Error: Number of decision points does not match")
+            
+            rv$ea_shape <- "time-varying"
+        }
         
         validate(
             need(min(result) > 0,
@@ -334,18 +360,24 @@ shinyServer(function(input,output,session){
         if (is.null(inFile)) {
             return(NULL)
         }
-        
+        print('ea inter days')
+        print("Expected.Availability" %in% colnames(read.csv(inFile$datapath, header = TRUE)))
+
         read.csv(inFile$datapath, header = TRUE)
+        
+    
     })
     
     ea_inter_dec <- reactive({    
         
         inFile <- input$file0a
         
-        if (is.null(inFile))
+        if (is.null(inFile)) {
             return(NULL)
-        
-        read.csv(inFile$datapath, header = TRUE, sep = ',')
+        }
+        print('ea inter dec')
+        print(read.csv(inFile$datapath, header = TRUE))
+        read.csv(inFile$datapath, header = TRUE)
     })
     
     
@@ -356,27 +388,32 @@ shinyServer(function(input,output,session){
         delta <- as.vector(ea_inter_days()$Expected.Availability)
         
         validate(
-            need(!is.null(input$file1), "Warning: No file is uploaded"),
-            need(is.null(input$file1) || length(delta) == input$days , 
+            need(!is.null(input$file0), "Warning: No file is uploaded"),
+            need(is.null(input$file0) || "Expected.Availability" %in% colnames(ea_inter_days()),
+                 "Error: need a column titled 'Expected Availability'; see template"),
+            need(is.null(input$file0) || length(delta) == input$days , 
                  "Error: the number of days doesn't match."),
-            need(is.null(input$file1) || max(delta) <= 1, 
+            need(is.null(input$file0) || max(delta) <= 1, 
                  "Error: some value of expected availability is bigger than 1"),
-            need(is.null(input$file1) || min(delta) >= 0, 
+            need(is.null(input$file0) || min(delta) >= 0, 
                  "Error: some value of expected availability is less than 0")
         )
         
         head(ea_inter_days(), n = 5)
     })
     
-    output$ea_inter_table_dec <- renderDataTable({       
+    output$ea_inter_table_dec <- renderDataTable({    
+        print("ea inter table dec")
         delta <- as.vector(ea_inter_dec()$Expected.Availability)
         validate(
-            need(!is.null(input$file2), "Warning: No file is uploaded"),
-            need(is.null(input$file2) || length(delta) == input$days * input$occ_per_day, 
+            need(!is.null(input$file0a), "Warning: No file is uploaded"),
+            need("Expected.Availability" %in% colnames(ea_inter_dec()),
+                 "Error: need a column titled 'Expected Availability'; see template"),
+            need(is.null(input$file0a) || length(delta) == input$days * input$occ_per_day, 
                  "Error: the number of decision times doesn't match."),
-            need(is.null(input$file2) || max(delta) <= 1, 
+            need(is.null(input$file0a) || max(delta) <= 1, 
                  "Error: some value of expected availability is bigger than 1"),
-            need(is.null(input$file2) || min(delta) >= 0, 
+            need(is.null(input$file0a) || min(delta) >= 0, 
                  "Error: some value of expected availability is less than 0")
         )
         head(ea_inter_dec(), n = 5)
@@ -422,13 +459,7 @@ shinyServer(function(input,output,session){
         }
     )
     
-    
-    
-    
-    
-    
-    
-    
+
     
     
     ##### Calculate Sample Size #####
@@ -675,6 +706,8 @@ shinyServer(function(input,output,session){
             rv$rp_shape <- "time-varying"
         }
         
+
+        
         
         power_vs_n_plot_wrapper(p10 = p10(),
                                 pT0 = pT0(),
@@ -872,7 +905,7 @@ shinyServer(function(input,output,session){
             paste0("power_history.csv")
         },
         content = function(file){
-            write.csv(pow_history_tab(), file, row.names=FALSE)
+            write.csv(power_history_tab(), file, row.names=FALSE)
         }
     )
     

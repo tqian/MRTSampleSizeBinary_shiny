@@ -208,7 +208,7 @@ is considered critical to maintaining participant buy-in and engagement."),
                                 'you can first download the template and then try uploading them.'
                               ),
                               downloadButton("ea_days_template", "Template"),
-                              p('In the sample file, the randomization probability is contantly 0.4'),
+                              p('In the sample file, the expected availability is contantly 0.7'),
                               p('The number of inputs for this file should be equal to the number of days.'),
                               p('Showing the first 5 rows of the uploaded file. '),
                               dataTableOutput('ea_inter_table_days')
@@ -223,7 +223,7 @@ is considered critical to maintaining participant buy-in and engagement."),
                                 'you can first download the template and then try uploading them.'
                               ),
                               downloadButton("ea_dec_pts_template", "Template"),
-                              p('In the sample file, the randomization probability is contantly 0.4'),
+                              p('In the sample file, the expected availability is contantly 0.7'),
                               p('The number of inputs for this file should be equal to the number of days.'),
                               p('Showing the first 5 rows of the uploaded file. '),
                               dataTableOutput('ea_inter_table_dec_pts')
