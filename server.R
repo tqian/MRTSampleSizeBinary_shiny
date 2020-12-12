@@ -1,4 +1,5 @@
 library(shiny)
+library(DT)
 source("sample_size_calc_bin_mrt.R")
 
 shinyServer(function(input,output,session){
@@ -560,21 +561,16 @@ shinyServer(function(input,output,session){
         # The determination of randomization probability is not well-implemented.
         # Need to think more carefully, because there are three sources of rand. prob.
         rand_prob <- rep(input$rand_prob_const, total_decision_points())
-        print(rand_prob)
+
         if (!is.null(input$file1)) {
-            print('file1')
             rand_prob <- rep(P_inter_days()$Randomization.Probability, 
                              each = input$occ_per_day)
         }
         
         if (!is.null(input$file2)) {
-            print('file2')
             rand_prob <- P_inter_dec()$Randomization.Probability
         }
-        print(length(rand_prob))
-        print("hi")
-        print(rand_prob)
-        print(P_inter_days()$Randomization.Probability)
+        
         psw_out <-power_summary_wrapper(p10 = p10(),
                                         pT0 = pT0(),
                                         p11 = p11(),
@@ -585,7 +581,6 @@ shinyServer(function(input,output,session){
                                         rand_prob = rand_prob,  ## p_t
                                         avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
                                         typeIerror = input$sig_level)  
-        print(psw_out)
         return(psw_out)
         
     })  
