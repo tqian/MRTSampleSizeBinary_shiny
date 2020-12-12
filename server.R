@@ -90,7 +90,7 @@ shinyServer(function(input,output,session){
     })
     
     
-    #### Templates #####
+    #### Templates for randomization probability #####
     
     days_df <- reactive({
         col_names <- c("Days", "Randomization Probability")
@@ -322,6 +322,114 @@ shinyServer(function(input,output,session){
                lty = c(1,2), 
                pch=c(16,NA),bty = "n")
     })
+    
+    
+    
+    
+    ### Reading the file with respect to days for expected availability ###
+    ea_inter_days <- reactive({     
+        
+        inFile <- input$file0
+        
+        if (is.null(inFile)) {
+            return(NULL)
+        }
+        
+        read.csv(inFile$datapath, header = TRUE)
+    })
+    
+    ea_inter_dec <- reactive({    
+        
+        inFile <- input$file0a
+        
+        if (is.null(inFile))
+            return(NULL)
+        
+        read.csv(inFile$datapath, header = TRUE, sep = ',')
+    })
+    
+    
+    #### Output the first five rows of the table reading from the file with respect to days
+    ### and output warnings if the format of the file is not correct
+    #### Output the first five rows of the table reading from the file for days
+    output$ea_inter_table_days <- renderDataTable({      
+        delta <- as.vector(ea_inter_days()$Expected.Availability)
+        
+        validate(
+            need(!is.null(input$file1), "Warning: No file is uploaded"),
+            need(is.null(input$file1) || length(delta) == input$days , 
+                 "Error: the number of days doesn't match."),
+            need(is.null(input$file1) || max(delta) <= 1, 
+                 "Error: some value of expected availability is bigger than 1"),
+            need(is.null(input$file1) || min(delta) >= 0, 
+                 "Error: some value of expected availability is less than 0")
+        )
+        
+        head(ea_inter_days(), n = 5)
+    })
+    
+    output$ea_inter_table_dec <- renderDataTable({       
+        delta <- as.vector(ea_inter_dec()$Expected.Availability)
+        validate(
+            need(!is.null(input$file2), "Warning: No file is uploaded"),
+            need(is.null(input$file2) || length(delta) == input$days * input$occ_per_day, 
+                 "Error: the number of decision times doesn't match."),
+            need(is.null(input$file2) || max(delta) <= 1, 
+                 "Error: some value of expected availability is bigger than 1"),
+            need(is.null(input$file2) || min(delta) >= 0, 
+                 "Error: some value of expected availability is less than 0")
+        )
+        head(ea_inter_dec(), n = 5)
+    })
+    
+    ### expected availability templates ###
+    ea_days_df <- reactive({
+        col_names <- c("Days", "Expected Availability")
+        temp_df <- data.frame(cbind(1:input$days, rep(0.7, input$days)))
+        colnames(temp_df) <- col_names
+        temp_df
+    })
+    
+    
+    output$ea_days_template <- downloadHandler(
+        filename = function() {
+            paste0("exp_avail_", input$days, "_days.csv")
+        },
+        content = function(file){
+            write.csv(ea_days_df(), file, row.names=FALSE)
+        }
+    )
+    
+    
+    ea_dec_pts_df <- reactive({
+        col_names <- c("Dec Times", "Expected Availability")
+        dec_pts <- ceiling(input$days * input$occ_per_day)
+        temp_df <- data.frame(cbind(1:dec_pts, rep(0.7, dec_pts)))
+        colnames(temp_df) <- col_names
+        temp_df
+    })
+    
+    output$ea_dec_pts_template <- downloadHandler(
+        filename = function() {
+            paste0("exp_avail_", 
+                   round(input$days*input$occ_per_day), 
+                   "_dec_pts_over_",
+                   input$days,
+                   "days.csv")
+        },
+        content = function(file){
+            write.csv(ea_dec_pts_df(), file, row.names=FALSE)
+        }
+    )
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     ##### Calculate Sample Size #####
     

@@ -175,7 +175,9 @@ is considered critical to maintaining participant buy-in and engagement."),
              selectizeInput("avail_choices", 
                             label = "Select one of the following patterns for the expected availability", 
                             choices=list("Constant"="constant",
-                                         "Linear"="linear"),
+                                         "Linear"="linear",
+                                         "Time-Varying: Days"= "tv_days",
+                                         "Time-Varying: Decision Points"="tv_dec_pts"),
                             options = list(
                               placeholder = "Please select a pattern",
                               onInitialize = I('function() { this.setValue(0); }')
@@ -196,6 +198,35 @@ is considered critical to maintaining participant buy-in and engagement."),
                               sliderInput("avail_linear_final",
                                           label="Final Value of Expected Availability", 
                                           min = 0, max = 1,value = 0.6)
+             ),
+             conditionalPanel(condition="input.avail_choices == 'tv_days' ",
+                              fileInput('file0',
+                                        'Choose a .csv file of time-varying expected availabilitys (Days) to upload',
+                                        accept = c('.csv')
+                              ),
+                              p('If you want a template of .csv file ,',
+                                'you can first download the template and then try uploading them.'
+                              ),
+                              downloadButton("ea_days_template", "Template"),
+                              p('In the sample file, the randomization probability is contantly 0.4'),
+                              p('The number of inputs for this file should be equal to the number of days.'),
+                              p('Showing the first 5 rows of the uploaded file. '),
+                              dataTableOutput('ea_inter_table_days')
+             ),
+             
+             conditionalPanel(condition="input.avail_choices == 'tv_dec_pts' ",
+                              fileInput('file0a',
+                                        'Choose a .csv file of time-varying expected availabilitys (Decision Times) to upload',
+                                        accept = c('.csv')
+                              ),
+                              p('If you want a template of .csv file ,',
+                                'you can first download the template and then try uploading them.'
+                              ),
+                              downloadButton("ea_dec_pts_template", "Template"),
+                              p('In the sample file, the randomization probability is contantly 0.4'),
+                              p('The number of inputs for this file should be equal to the number of days.'),
+                              p('Showing the first 5 rows of the uploaded file. '),
+                              dataTableOutput('ea_inter_table_dec_pts')
              ),
              
              
