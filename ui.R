@@ -223,7 +223,7 @@ shinyUI(fluidPage(
                               p('In the sample file, the expected availability is contantly 0.7.'),
                               p('The number of inputs for this file should be equal to the number of decision points.'),
                               p('Showing the first 5 rows of the uploaded file. '),
-                              dataTableOutput('ea_inter_table_dec_pts')
+                              dataTableOutput('ea_inter_table_dec')
              ),
              
              

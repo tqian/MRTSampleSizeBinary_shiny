@@ -43,7 +43,9 @@ shinyServer(function(input,output,session){
     
     #### Output the first five rows of the table reading from the file with respect to decision times 
     ### and output warnings if the format of the file is not correct
-    output$P_inter_table_dec <- renderDataTable({       
+    output$P_inter_table_dec <- renderDataTable({      
+        print("p inter dec table")
+        print(P_inter_dec())
         delta <- as.vector(P_inter_dec()$Randomization.Probability)
         validate(
             need(!is.null(input$file2), "Warning: No file is uploaded"),
@@ -59,7 +61,9 @@ shinyServer(function(input,output,session){
     })
     
     ### Reading the file with respect to days ###
-    P_inter_days <- reactive({     
+    P_inter_days <- reactive({    
+        
+
         
         inFile <- input$file1
         
@@ -73,9 +77,10 @@ shinyServer(function(input,output,session){
     #### Output the first five rows of the table reading from the file with respect to days
     ### and output warnings if the format of the file is not correct
     #### Output the first five rows of the table reading from the file for days
-    output$P_inter_table_days <- renderDataTable({      
+    output$P_inter_table_days <- renderDataTable({     
+        print("p inter days table")
         delta <- as.vector(P_inter_days()$Randomization.Probability)
-        
+        print(P_inter_days())
         validate(
             need(!is.null(input$file1), "Warning: No file is uploaded"),
             need(is.null(input$file1) || length(delta) == input$days , 
@@ -317,27 +322,35 @@ shinyServer(function(input,output,session){
             rv$ea_shape <- "linear"
             
         } else if (input$avail_choices == "tv_days") {
+            print('hello days')
+            print(ea_inter_days())
+            validate(need(!is.null(ea_inter_days()),
+                     "Error: No file uploaded."))
+            print('pass validation')
             result <- rep(ea_inter_days()$Expected.Availability, 
                           each = input$occ_per_day)
             
-            print('hello days')
+
             print(length(result))
             print(total_decision_points())
-            validate(need(length(result)==total_decision_points()),
-                     "Error: Number of days does not match")
+            validate(need(length(result)==total_decision_points(),
+                     "Error: Number of days does not match"))
             
             rv$ea_shape <- "time-varying"
             
             
         } else if (input$avail_choices == "tv_dec_pts") {
             print('hello dec pts')
-            
+            validate(need(!is.null(ea_inter_dec()), "Error: No file uploaded"),
+                     need("Expected.Availability" %in% colnames(ea_inter_dec()), 
+                          "Error: No column of expected availability. See template")) 
             result <- ea_inter_dec()$Expected.Availability
-
+            print('midway dec pts')
             validate(need(length(result)==total_decision_points()),
                      "Error: Number of decision points does not match")
             
             rv$ea_shape <- "time-varying"
+            print('bye dec pts')
         }
         
         validate(
@@ -358,6 +371,7 @@ shinyServer(function(input,output,session){
     ### Plot the graph for expected availability ###
     
     output$avail_graph <- renderPlot({
+        validate(need(!(is.null(avail_input())), "Error: No availability input"))
         plot(avail_input(), 
              xlab = "Decision Point", 
              ylab = "Expected Availability", 
@@ -381,7 +395,6 @@ shinyServer(function(input,output,session){
     ea_inter_days <- reactive({     
         
         inFile <- input$file0
-        #inFile <- input$file0a
         
     
         if (is.null(inFile)) {
@@ -417,13 +430,16 @@ shinyServer(function(input,output,session){
         
     })
     
+
+    
     
     #### Output the first five rows of the table reading from the file with respect to days
     ### and output warnings if the format of the file is not correct
     #### Output the first five rows of the table reading from the file for days
     output$ea_inter_table_days <- renderDataTable({      
         delta <- as.vector(ea_inter_days()$Expected.Availability)
-        
+        print('ea inter table days')
+        print(ea_inter_days())
         validate(
             need(!is.null(input$file0), "Warning: No file is uploaded"),
             need(is.null(input$file0) || "Expected.Availability" %in% colnames(ea_inter_days()),
@@ -435,7 +451,7 @@ shinyServer(function(input,output,session){
             need(is.null(input$file0) || min(delta) >= 0, 
                  "Error: some value of expected availability is less than 0")
         )
-        
+        print('exit ea inter table days')
         head(ea_inter_days(), n = 5)
     })
     
@@ -444,7 +460,7 @@ shinyServer(function(input,output,session){
         delta <- as.vector(ea_inter_dec()$Expected.Availability)
         validate(
             need(!is.null(input$file0a), "Warning: No file is uploaded"),
-            need("Expected.Availability" %in% colnames(ea_inter_dec()),
+            need(is.null(input$file0a) || "Expected.Availability" %in% colnames(ea_inter_dec()),
                  "Error: need a column titled 'Expected Availability'; see template"),
             need(is.null(input$file0a) || length(delta) == input$days * input$occ_per_day, 
                  "Error: the number of decision times doesn't match."),
