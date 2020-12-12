@@ -4,6 +4,8 @@ source("sample_size_calc_bin_mrt.R")
 
 shinyServer(function(input,output,session){
     
+    rv <- reactiveValues(data=NULL)
+    
     ### Calculate total number of decision points based on # Days and # Decision points per day
     
     total_decision_points <- reactive({
@@ -322,23 +324,35 @@ shinyServer(function(input,output,session){
     sample_size <- eventReactive(input$button_calculate_sample_size, {
         # The determination of randomization probability is not well-implemented.
         # Need to think more carefully, because there are three sources of rand. prob.
-        rand_prob <- rep(input$rand_prob_const, total_decision_points())
+        # rand_prob <- rep(input$rand_prob_const, total_decision_points())
+        # 
+        # if (!is.null(input$file1)) {
+        #     rand_prob <- rep(P_inter_days()$Randomization.Probability, 
+        #                      each = input$occ_per_day)
+        #     
+        #     if(length(rand_prob) != total_decision_points()){
+        #         stop("length of random probabilities does not match")
+        #     }
+        #     
+        #     # below is the old, buggy code
+        #     #rand_prob <- rep(P_inter_days()$Randomization.Probability, 
+        #     #                 each = input$occ_per_day)
+        # }
+        # 
+        # if (!is.null(input$file2)) {
+        #     rand_prob <- P_inter_dec()$Randomization.Probability
+        # }
         
-        if (!is.null(input$file1)) {
+        if (input$rand_prob_choices == "constant"){
+            rand_prob <- rep(input$rand_prob_const, total_decision_points())
+            rv$rp_shape <- "constant"
+        } else if (input$rand_prob_choices == "tv_days") {
             rand_prob <- rep(P_inter_days()$Randomization.Probability, 
                              each = input$occ_per_day)
-            
-            if(length(rand_prob) != total_decision_points()){
-                stop("length of random probabilities does not match")
-            }
-            
-            # below is the old, buggy code
-            #rand_prob <- rep(P_inter_days()$Randomization.Probability, 
-            #                 each = input$occ_per_day)
-        }
-        
-        if (!is.null(input$file2)) {
+            rv$rp_shape <- "time-varying"
+        } else if (input$rand_prob_choices == "tv_dec_pts") {
             rand_prob <- P_inter_dec()$Randomization.Probability
+            rv$rp_shape <- "time-varying"
         }
         
         calculate_mrt_bin_samplesize_wrapper(p10 = p10(),
@@ -379,14 +393,19 @@ shinyServer(function(input,output,session){
     power <- eventReactive(input$button_calculate_power, {
         # The determination of randomization probability is not well-implemented.
         # Need to think more carefully, because there are three sources of rand. prob.
-        rand_prob <- rep(input$rand_prob_const, total_decision_points())
-        if (!is.null(input$file1)) {
+        
+        if (input$rand_prob_choices == "constant"){
+            rand_prob <- rep(input$rand_prob_const, total_decision_points())
+            rv$rp_shape <- "constant"
+        } else if (input$rand_prob_choices == "tv_days") {
             rand_prob <- rep(P_inter_days()$Randomization.Probability, 
                              each = input$occ_per_day)
-        }
-        if (!is.null(input$file2)) {
+            rv$rp_shape <- "time-varying"
+        } else if (input$rand_prob_choices == "tv_dec_pts") {
             rand_prob <- P_inter_dec()$Randomization.Probability
+            rv$rp_shape <- "time-varying"
         }
+        
         
         
         calculate_mrt_bin_power_wrapper(p10 = p10(),
@@ -425,7 +444,7 @@ shinyServer(function(input,output,session){
     sample_size_history <- reactiveValues(avail_pattern = c(), 
                                           avail_init = c(), 
                                           avail_final = c(),
-                                          rand_prob = c(),
+                                          rand_prob_shape = c(),
                                           alpha_shape = c(), 
                                           p10 = c(), 
                                           pT0 = c(),
@@ -434,7 +453,8 @@ shinyServer(function(input,output,session){
                                           pT1 = c(),
                                           sample_size = c(),
                                           power = c(),
-                                          sig_level = c())
+                                          sig_level = c(),
+                                          tot_dec_pts = c())
     
     observeEvent(input$button_calculate_sample_size, {
         sample_size_history$avail_pattern <- c(sample_size_history$avail_pattern, 
@@ -446,8 +466,8 @@ shinyServer(function(input,output,session){
         sample_size_history$avail_final <- c(sample_size_history$avail_final, 
                                              avail_input()[total_decision_points()])
         
-        sample_size_history$rand_prob <- c(sample_size_history$rand_prob, 
-                                           input$rand_prob_const)
+        sample_size_history$rand_prob_shape <- c(sample_size_history$rand_prob_shape, 
+                                           rv$rp_shape)
         
         sample_size_history$alpha_shape <- c(sample_size_history$alpha_shape, 
                                              input$alpha_choices)
@@ -471,13 +491,19 @@ shinyServer(function(input,output,session){
         
         sample_size_history$sig_level <- c(sample_size_history$sig_level, 
                                            input$sig_level)
+        
+        sample_size_history$tot_dec_pts <- c(sample_size_history$tot_dec_pts,
+                                             total_decision_points())
     })
     
     output$sample_size_history_table <- renderTable({
-        data.frame("Sample Size" = sample_size_history$sample_size,
+
+        ssht <- data.frame(
+            "Sample Size" = sample_size_history$sample_size,
                    "Power" = sample_size_history$power,
                    "Sig Level" = sample_size_history$sig_level,
-                   "Rand Prob" = sample_size_history$rand_prob,
+                   "Rand Prob Shape" = sample_size_history$rand_prob_shape,
+                   "Total Dec Pts" = sample_size_history$tot_dec_pts,
                    "Succ Prob No Trt Shape" = sample_size_history$alpha_shape,
                    "Trt Eff Shape" = sample_size_history$beta_shape,
                    "p10" = sample_size_history$p10,
@@ -487,6 +513,7 @@ shinyServer(function(input,output,session){
                    "Avail Pattern" = sample_size_history$avail_pattern,
                    "Avail Init" = sample_size_history$avail_init,
                    "Avail Final" = sample_size_history$avail_final)
+        ssht
     })
     
     
@@ -494,16 +521,19 @@ shinyServer(function(input,output,session){
     pow_vs_n_plot1 <- eventReactive(input$button_calculate_sample_size, {
         # The determination of randomization probability is not well-implemented.
         # Need to think more carefully, because there are three sources of rand. prob.
-        rand_prob <- rep(input$rand_prob_const, total_decision_points())
         
-        if (!is.null(input$file1)) {
+        if (input$rand_prob_choices == "constant"){
+            rand_prob <- rep(input$rand_prob_const, total_decision_points())
+            rv$rp_shape <- "constant"
+        } else if (input$rand_prob_choices == "tv_days") {
             rand_prob <- rep(P_inter_days()$Randomization.Probability, 
                              each = input$occ_per_day)
+            rv$rp_shape <- "time-varying"
+        } else if (input$rand_prob_choices == "tv_dec_pts") {
+            rand_prob <- P_inter_dec()$Randomization.Probability
+            rv$rp_shape <- "time-varying"
         }
         
-        if (!is.null(input$file2)) {
-            rand_prob <- P_inter_dec()$Randomization.Probability
-        }
         
         power_vs_n_plot_wrapper(p10 = p10(),
                                 pT0 = pT0(),
@@ -527,16 +557,19 @@ shinyServer(function(input,output,session){
     pow_vs_n_plot2 <- eventReactive(input$button_calculate_power, {
         # The determination of randomization probability is not well-implemented.
         # Need to think more carefully, because there are three sources of rand. prob.
-        rand_prob <- rep(input$rand_prob_const, total_decision_points())
         
-        if (!is.null(input$file1)) {
+        if (input$rand_prob_choices == "constant"){
+            rand_prob <- rep(input$rand_prob_const, total_decision_points())
+            rv$rp_shape <- "constant"
+        } else if (input$rand_prob_choices == "tv_days") {
             rand_prob <- rep(P_inter_days()$Randomization.Probability, 
                              each = input$occ_per_day)
+            rv$rp_shape <- "time-varying"
+        } else if (input$rand_prob_choices == "tv_dec_pts") {
+            rand_prob <- P_inter_dec()$Randomization.Probability
+            rv$rp_shape <- "time-varying"
         }
         
-        if (!is.null(input$file2)) {
-            rand_prob <- P_inter_dec()$Randomization.Probability
-        }
         
         power_vs_n_plot_wrapper(p10 = p10(),
                                 pT0 = pT0(),
@@ -560,16 +593,19 @@ shinyServer(function(input,output,session){
     pow_summary1 <- eventReactive(input$button_calculate_sample_size, {
         # The determination of randomization probability is not well-implemented.
         # Need to think more carefully, because there are three sources of rand. prob.
-        rand_prob <- rep(input$rand_prob_const, total_decision_points())
-
-        if (!is.null(input$file1)) {
+        
+        if (input$rand_prob_choices == "constant"){
+            rand_prob <- rep(input$rand_prob_const, total_decision_points())
+            rv$rp_shape <- "constant"
+        } else if (input$rand_prob_choices == "tv_days") {
             rand_prob <- rep(P_inter_days()$Randomization.Probability, 
                              each = input$occ_per_day)
+            rv$rp_shape <- "time-varying"
+        } else if (input$rand_prob_choices == "tv_dec_pts") {
+            rand_prob <- P_inter_dec()$Randomization.Probability
+            rv$rp_shape <- "time-varying"
         }
         
-        if (!is.null(input$file2)) {
-            rand_prob <- P_inter_dec()$Randomization.Probability
-        }
         
         psw_out <-power_summary_wrapper(p10 = p10(),
                                         pT0 = pT0(),
@@ -581,6 +617,7 @@ shinyServer(function(input,output,session){
                                         rand_prob = rand_prob,  ## p_t
                                         avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
                                         typeIerror = input$sig_level)  
+       
         return(psw_out)
         
     })  
@@ -591,16 +628,19 @@ shinyServer(function(input,output,session){
     pow_summary2 <- eventReactive(input$button_calculate_power, {
         # The determination of randomization probability is not well-implemented.
         # Need to think more carefully, because there are three sources of rand. prob.
-        rand_prob <- rep(input$rand_prob_const, total_decision_points())
         
-        if (!is.null(input$file1)) {
+        if (input$rand_prob_choices == "constant"){
+            rand_prob <- rep(input$rand_prob_const, total_decision_points())
+            rv$rp_shape <- "constant"
+        } else if (input$rand_prob_choices == "tv_days") {
             rand_prob <- rep(P_inter_days()$Randomization.Probability, 
                              each = input$occ_per_day)
+            rv$rp_shape <- "time-varying"
+        } else if (input$rand_prob_choices == "tv_dec_pts") {
+            rand_prob <- P_inter_dec()$Randomization.Probability
+            rv$rp_shape <- "time-varying"
         }
         
-        if (!is.null(input$file2)) {
-            rand_prob <- P_inter_dec()$Randomization.Probability
-        }
         
         power_summary_wrapper(p10 = p10(),
                               pT0 = pT0(),
@@ -623,7 +663,7 @@ shinyServer(function(input,output,session){
     power_history <- reactiveValues(avail_pattern = c(), 
                                     avail_init = c(), 
                                     avail_final = c(),
-                                    rand_prob = c(),
+                                    rand_prob_shape = c(),
                                     alpha_shape = c(), 
                                     p10 = c(), 
                                     pT0 = c(),
@@ -632,7 +672,8 @@ shinyServer(function(input,output,session){
                                     pT1 = c(),
                                     sample_size = c(),
                                     power = c(),
-                                    sig_level = c())
+                                    sig_level = c(),
+                                    total_dec_pts = c())
     
     observeEvent(input$button_calculate_power, {
         power_history$avail_pattern <- c(power_history$avail_pattern, 
@@ -641,8 +682,6 @@ shinyServer(function(input,output,session){
                                       avail_input()[1])
         power_history$avail_final <- c(power_history$avail_final, 
                                        avail_input()[total_decision_points()])
-        power_history$rand_prob <- c(power_history$rand_prob, 
-                                     input$rand_prob_const)
         power_history$alpha_shape <- c(power_history$alpha_shape, 
                                        input$alpha_choices)
         power_history$p10 <- c(power_history$p10, p10())
@@ -656,15 +695,21 @@ shinyServer(function(input,output,session){
         power_history$power <- c(power_history$power, power())
         power_history$sig_level <- c(power_history$sig_level, 
                                      input$sig_level)
+        power_history$rand_prob_shape <- c(power_history$rand_prob_shape, 
+                                     rv$rp_shape)
+        power_history$total_dec_pts <- c(power_history$total_dec_pts,
+                                         total_decision_points())
     })
     
-    output$power_history_table <- renderTable({
-        data.frame("Sample Size" = power_history$sample_size,
+    output$power_history_table <- renderDataTable({
+
+        pht <- data.frame("Sample Size" = power_history$sample_size,
                    "Power" = power_history$power,
                    "Sig Level" = power_history$sig_level,
-                   "Rand Prob" = power_history$rand_prob,
+                   "Rand Prob Shape" = power_history$rand_prob_shape,
                    "Succ Prob No Trt Shape" = power_history$alpha_shape,
                    "Trt Eff Shape" = power_history$beta_shape,
+                   "Total Dec Pts" = power_history$total_dec_pts,
                    "p10" = power_history$p10,
                    "pT0" = power_history$pT0,
                    "p11" = power_history$p11,
@@ -672,5 +717,8 @@ shinyServer(function(input,output,session){
                    "Avail Pattern" = power_history$avail_pattern,
                    "Avail Init" = power_history$avail_init,
                    "Avail Final" = power_history$avail_final)
+        
+
+        pht
     })
 })
