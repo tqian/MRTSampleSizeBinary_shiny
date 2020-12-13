@@ -44,8 +44,6 @@ shinyServer(function(input,output,session){
     #### Output the first five rows of the table reading from the file with respect to decision times 
     ### and output warnings if the format of the file is not correct
     output$P_inter_table_dec <- renderDataTable({      
-        print("p inter dec table")
-        print(P_inter_dec())
         delta <- as.vector(P_inter_dec()$Randomization.Probability)
         validate(
             need(!is.null(input$file2), "Warning: No file is uploaded"),
@@ -78,9 +76,7 @@ shinyServer(function(input,output,session){
     ### and output warnings if the format of the file is not correct
     #### Output the first five rows of the table reading from the file for days
     output$P_inter_table_days <- renderDataTable({     
-        print("p inter days table")
         delta <- as.vector(P_inter_days()$Randomization.Probability)
-        print(P_inter_days())
         validate(
             need(!is.null(input$file1), "Warning: No file is uploaded"),
             need(is.null(input$file1) || length(delta) == input$days , 
@@ -161,7 +157,6 @@ shinyServer(function(input,output,session){
         # This part should have not effect on the UI.
         result <- 0.5
         if (input$alpha_choices == "constant") {
-            print('const amat')
             validate(
                 need(input$alpha_constant_mean > 0, 
                      "Error: Please specify the baseline success probability greater than 0")
@@ -172,7 +167,6 @@ shinyServer(function(input,output,session){
             result <- matrix(log(input$alpha_constant_mean))
             
         } else if (input$alpha_choices == "loglinear") {
-            print("loglinear amat")
             validate(
                 need(input$alpha_loglinear_initial > 0, 
                      "Error: Please specify the initial value of baseline success probability greater than 0"),
@@ -192,7 +186,6 @@ shinyServer(function(input,output,session){
             
             # result <- exp(result_log)
         } else if (input$alpha_choices == "logquadratic"){
-            print("logquad amat")
            validate(
                 need(input$alpha_logquad_initial > 0, 
                      "Error: Please specify the initial value of baseline success probability greater than 0"),
@@ -201,7 +194,6 @@ shinyServer(function(input,output,session){
                 need(input$alpha_logquad_change_pt > 0, 
                      "Error: Please specify the final value of baseline success probability greater than 0")
             )
-           print('pass validation lq')
             
             k1 <- log(input$alpha_logquad_initial)
             k2 <- input$alpha_logquad_change_pt
@@ -220,11 +212,8 @@ shinyServer(function(input,output,session){
             a_mat <- as.matrix(c(a1, a2, a3), ncol=1)
             
             #result <- exp(t_mat %*% a_mat) 
-            #print(result)
-            #print(a_mat)
             
             result <- a_mat
-            print('exit lq')
         }
         # validate(
         #     need(min(result) > 0,
@@ -237,7 +226,6 @@ shinyServer(function(input,output,session){
     
     g_t <- reactive({
       #  if(!is.null(a_mat())) {
-        print('in gt')
             if (input$alpha_choices == "constant") {
                 
                 t_mat <- as.matrix(rep(1, times = total_decision_points()))
@@ -249,17 +237,14 @@ shinyServer(function(input,output,session){
                 return(t_mat)
             
             } else if (input$alpha_choices == "logquadratic"){
-                print(total_decision_points())
-                print(rep(1, times=total_decision_points()))
-                print(1:total_decision_points())
-                print((1:total_decision_points())^2)
+
                 
                 one <- rep(1, times = total_decision_points())
                 two <- 1:total_decision_points()
                 three <- two^2
-                t_mat <- as.matrix(cbind(one, two, three))
+                t_mat <- as.matrix(
+                                cbind(one, two, three))
                 
-                print(t_mat)
 
                 
                 return(t_mat)
@@ -270,11 +255,7 @@ shinyServer(function(input,output,session){
     })
     
     alpha_input <- reactive({
-        print('alpha input')
-        print(g_t())
-        print(a_mat())
         if(!is.null(a_mat()) && !is.null(g_t())) {
-            print("amat and gt are fine")
             return(exp(g_t() %*% a_mat()))
         } else {
             return(.5)
@@ -310,11 +291,12 @@ shinyServer(function(input,output,session){
                 return(t_mat)
                 
             } else if (input$beta_choices == "logquadratic"){
+                
                 one <- rep(1, times = total_decision_points())
                 two <- 1:total_decision_points()
                 three <- two^2
+                
                 t_mat <- as.matrix(cbind(one, two, three))
-
                 return(t_mat)
             }
             
@@ -326,8 +308,6 @@ shinyServer(function(input,output,session){
     
     b_mat <- reactive({
         if (!is.null(alpha_input())){
-            print('bet input not alpha null')
-            print(alpha_input())
         # Initialize some value to avoid some internal error when running locally
         # This part should have not effect on the UI.
         result <- 1
@@ -363,7 +343,6 @@ shinyServer(function(input,output,session){
             
         } else if (input$beta_choices == "logquadratic"){
             
-            print('beta quad')
             validate(
                 need(input$beta_logquad_initial > 0, 
                      "Error: Please specify the initial value of baseline success probability greater than 0"),
@@ -373,7 +352,6 @@ shinyServer(function(input,output,session){
                      "Error: Please specify the final value of baseline success probability greater than 0")
             )
             
-            print('beta put')
             
             k1 <- log(input$beta_logquad_initial)
             k2 <- input$beta_logquad_change_pt
@@ -392,8 +370,6 @@ shinyServer(function(input,output,session){
             b_mat <- as.matrix(c(b1, b2, b3), ncol=1)
             
             result <- exp(t_mat %*% b_mat) 
-            print(result)
-            print(b_mat)
             
             result <- b_mat
         }
@@ -488,17 +464,14 @@ shinyServer(function(input,output,session){
             rv$ea_shape <- "linear"
             
         } else if (input$avail_choices == "tv_days") {
-            print('hello days')
-            print(ea_inter_days())
+
             validate(need(!is.null(ea_inter_days()),
                      "Error: No file uploaded."))
-            print('pass validation')
             result <- rep(ea_inter_days()$Expected.Availability, 
                           each = input$occ_per_day)
             
 
-            print(length(result))
-            print(total_decision_points())
+
             validate(need(length(result)==total_decision_points(),
                      "Error: Number of days does not match"))
             
@@ -506,17 +479,17 @@ shinyServer(function(input,output,session){
             
             
         } else if (input$avail_choices == "tv_dec_pts") {
-            print('hello dec pts')
+
             validate(need(!is.null(ea_inter_dec()), "Error: No file uploaded"),
                      need("Expected.Availability" %in% colnames(ea_inter_dec()), 
                           "Error: No column of expected availability. See template")) 
             result <- ea_inter_dec()$Expected.Availability
-            print('midway dec pts')
+
             validate(need(length(result)==total_decision_points()),
                      "Error: Number of decision points does not match")
             
             rv$ea_shape <- "time-varying"
-            print('bye dec pts')
+
         }
         
         validate(
@@ -528,10 +501,6 @@ shinyServer(function(input,output,session){
         result
     })
     
-    
-    
-    
-
     
     
     ### Plot the graph for expected availability ###
@@ -571,15 +540,7 @@ shinyServer(function(input,output,session){
         if (is.null(inFile)) {
             return(NULL)
         }
-        print('ea inter days')
-        print('file0a')
-        print(input$file0a)
-        print('file0')
-        print(input$file0)
 
-        print('ea inter dec')
-        print(ea_inter_dec())
-        print(input$file0)
         read.csv(inFile$datapath, header = TRUE)
         
     
@@ -588,12 +549,11 @@ shinyServer(function(input,output,session){
     ea_inter_dec <- reactive({     
         
         inFile <- input$file0a
-        #inFile <- input$file0a
+
         
         if (is.null(inFile)) {
             return(NULL)
         }
-        print('ea inter ddec')
         
         
         read.csv(inFile$datapath, header = TRUE)
@@ -609,8 +569,6 @@ shinyServer(function(input,output,session){
     #### Output the first five rows of the table reading from the file for days
     output$ea_inter_table_days <- renderDataTable({      
         delta <- as.vector(ea_inter_days()$Expected.Availability)
-        print('ea inter table days')
-        print(ea_inter_days())
         validate(
             need(!is.null(input$file0), "Warning: No file is uploaded"),
             need(is.null(input$file0) || "Expected.Availability" %in% colnames(ea_inter_days()),
@@ -622,12 +580,10 @@ shinyServer(function(input,output,session){
             need(is.null(input$file0) || min(delta) >= 0, 
                  "Error: some value of expected availability is less than 0")
         )
-        print('exit ea inter table days')
         head(ea_inter_days(), n = 5)
     })
     
     output$ea_inter_table_dec <- renderDataTable({    
-        print("ea inter table dec")
         delta <- as.vector(ea_inter_dec()$Expected.Availability)
         validate(
             need(!is.null(input$file0a), "Warning: No file is uploaded"),
@@ -689,55 +645,47 @@ shinyServer(function(input,output,session){
     ##### Calculate Sample Size #####
     
     sample_size <- eventReactive(input$button_calculate_sample_size, {
-        # The determination of randomization probability is not well-implemented.
-        # Need to think more carefully, because there are three sources of rand. prob.
-        # rand_prob <- rep(input$rand_prob_const, total_decision_points())
-        # 
 
-        
-        # if (input$rand_prob_choices == "constant"){
-        #     rand_prob <- rep(input$rand_prob_const, total_decision_points())
-        #     rv$rp_shape <- "constant"
-        # } else if (input$rand_prob_choices == "tv_days") {
-        #     rand_prob <- rep(P_inter_days()$Randomization.Probability, 
-        #                      each = input$occ_per_day)
-        #     rv$rp_shape <- "time-varying"
-        # } else if (input$rand_prob_choices == "tv_dec_pts") {
-        #     rand_prob <- P_inter_dec()$Randomization.Probability
-        #     rv$rp_shape <- "time-varying"
-        # }
-       
-        print(rand_prob()) 
         rv$ss_clicked <- TRUE
-        # calculate_mrt_bin_samplesize_wrapper(p10 = p10(),
-        #                                      pT0 = pT0(),
-        #                                      p11 = p11(),
-        #                                      pT1 = pT1(),
-        #                                      total_T = total_decision_points(),
-        #                                      alpha_shape = input$alpha_choices,
-        #                                      beta_shape = input$beta_choices,
-        #                                      alpha_input = alpha_input(),
-        #                                      beta_input = beta_input(),
-        #                                      rand_prob = rand_prob(),  ## p_t
-        #                                      avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
-        #                                      typeIerror = input$sig_level,
-        #                                      power = input$power)
-        print("ft/gt")
-        print(f_t())
-        print(g_t())
-        calculate_mrt_bin_samplesize_f(avail_pattern = avail_input(),
-                                       f_t = f_t(),
-                                       g_t = g_t(),
-                                       beta = b_mat(),
-                                       alpha = a_mat(),
-                                       p_t = rand_prob(),
-                                       gamma = input$sig_level,
-                                       b = 1-input$power)
-        
-        
+           
+           out <- tryCatch(
+               {
+                   
+                   message("This is the 'try' part")
+                   
+                   calculate_mrt_bin_samplesize_f(avail_pattern = avail_input(),
+                                                  f_t = f_t(),
+                                                  g_t = g_t(),
+                                                  beta = b_mat(),
+                                                  alpha = a_mat(),
+                                                  p_t = rand_prob(),
+                                                  gamma = input$sig_level,
+                                                  b = 1-input$power) 
+
+               },
+               error=function(cond) {
+                   message("Here's the original error message:")
+                   message(cond)
+                   # Choose a return value in case of error
+                   return(NA)
+               },
+               warning=function(cond) {
+                   message("Here's the original warning message:")
+                   message(cond)
+                   # Choose a return value in case of warning
+                   return(NA)
+               },
+               finally={
+                   message("Some other message at the end")
+               }
+           )    
+           return(out)
+    
     })
     
     output$sample_size <- renderUI({
+        
+        validate(need(is.numeric(sample_size()), "Check inputs and try again"))
         if (sample_size() > 10) {
             HTML(paste("<h4 style = 'color:blue';> The required sample size is ",
                        sample_size(), 
@@ -758,45 +706,45 @@ shinyServer(function(input,output,session){
     ##### Calculate Power #####
     
     power <- eventReactive(input$button_calculate_power, {
-        # The determination of randomization probability is not well-implemented.
-        # Need to think more carefully, because there are three sources of rand. prob.
         
-        # if (input$rand_prob_choices == "constant"){
-        #     rand_prob <- rep(input$rand_prob_const, total_decision_points())
-        #     rv$rp_shape <- "constant"
-        # } else if (input$rand_prob_choices == "tv_days") {
-        #     rand_prob <- rep(P_inter_days()$Randomization.Probability, 
-        #                      each = input$occ_per_day)
-        #     rv$rp_shape <- "time-varying"
-        # } else if (input$rand_prob_choices == "tv_dec_pts") {
-        #     rand_prob <- P_inter_dec()$Randomization.Probability
-        #     rv$rp_shape <- "time-varying"
-        # }
-        # 
+        out <- tryCatch(
+            {
+                
+                message("This is the 'try' part")
+                
+                calculate_mrt_bin_power_f(avail_pattern = avail_input(),
+                                          f_t = f_t(),
+                                          g_t = g_t(),
+                                          beta = b_mat(),
+                                          alpha = a_mat(),
+                                          p_t = rand_prob(),
+                                          gamma = input$sig_level,
+                                          n = input$sample_size)
+                
+            },
+            error=function(cond) {
+                message("Here's the original error message:")
+                message(cond)
+                # Choose a return value in case of error
+                return(NA)
+            },
+            warning=function(cond) {
+                message("Here's the original warning message:")
+                message(cond)
+                # Choose a return value in case of warning
+                return(NA)
+            },
+            finally={
+                message("Some other message at the end")
+            }
+        )    
+        return(out)
         
-        # 
-        # calculate_mrt_bin_power_wrapper(p10 = p10(),
-        #                                 pT0 = pT0(),
-        #                                 p11 = p11(),
-        #                                 pT1 = pT1(),
-        #                                 total_T = total_decision_points(),
-        #                                 alpha_shape = input$alpha_choices,
-        #                                 beta_shape = input$beta_choices,
-        #                                 rand_prob = rand_prob(),  ## p_t
-        #                                 avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
-        #                                 typeIerror = input$sig_level,
-        #                                 sample_size = input$sample_size)
-        calculate_mrt_bin_power_f(avail_pattern = avail_input(),
-                                  f_t = f_t(),
-                                  g_t = g_t(),
-                                  beta = b_mat(),
-                                  alpha = a_mat(),
-                                  p_t = rand_prob(),
-                                  gamma = input$sig_level,
-                                  n = input$sample_size)
     })
     
     output$power <- renderUI({
+        validate(need(!is.na(power()), 
+                      "Something went wrong. Check inputs and try again"))
         if (power() >= 0.4) {
             HTML(paste("<h4 style = 'color:blue';> The power we get is ", 
                        round(power(), 3)*100,
@@ -816,20 +764,6 @@ shinyServer(function(input,output,session){
     
     ### Create history table for power calculation and sample size calculation
     
-    # sample_size_history <- reactiveValues(avail_pattern = c(), 
-    #                                       avail_init = c(), 
-    #                                       avail_final = c(),
-    #                                       rand_prob_shape = c(),
-    #                                       alpha_shape = c(), 
-    #                                       p10 = c(), 
-    #                                       pT0 = c(),
-    #                                       beta_shape = c(), 
-    #                                       p11 = c(), 
-    #                                       pT1 = c(),
-    #                                       sample_size = c(),
-    #                                       power = c(),
-    #                                       sig_level = c(),
-    #                                       tot_dec_pts = c())
     
     sample_size_history <- reactiveValues(data=NULL)
     
@@ -872,9 +806,7 @@ shinyServer(function(input,output,session){
         sample_size_history$tot_dec_pts <- c(sample_size_history$tot_dec_pts,
                                              total_decision_points())
     })
-    
-   # ss_hist_tab <- renderDataTable({
-    #ss_hist_tab <- renderDataTable({
+
         samp_size_hist <- reactive({data.frame(
             "Sample Size" = sample_size_history$sample_size,
                    "Power" = sample_size_history$power,
@@ -894,7 +826,10 @@ shinyServer(function(input,output,session){
     #})
    
 
-    output$sample_size_history_table <- renderDataTable({samp_size_hist()})
+    output$sample_size_history_table <- renderDataTable({
+    
+        samp_size_hist()
+    })
     
 
     
@@ -926,83 +861,89 @@ shinyServer(function(input,output,session){
         # Need to think more carefully, because there are three sources of rand. prob.
         
         rv$ss_clicked <- TRUE
-        # 
-        # if (input$rand_prob_choices == "constant"){
-        #     rand_prob <- rep(input$rand_prob_const, total_decision_points())
-        #     rv$rp_shape <- "constant"
-        # } else if (input$rand_prob_choices == "tv_days") {
-        #     rand_prob <- rep(P_inter_days()$Randomization.Probability, 
-        #                      each = input$occ_per_day)
-        #     rv$rp_shape <- "time-varying"
-        # } else if (input$rand_prob_choices == "tv_dec_pts") {
-        #     rand_prob <- P_inter_dec()$Randomization.Probability
-        #     rv$rp_shape <- "time-varying"
-        # }
+
         
 
         
-        
-        # power_vs_n_plot_wrapper(p10 = p10(),
-        #                         pT0 = pT0(),
-        #                         p11 = p11(),
-        #                         pT1 = pT1(),
-        #                         total_T = total_decision_points(),
-        #                         alpha_shape = input$alpha_choices,
-        #                         beta_shape = input$beta_choices,
-        #                         rand_prob = rand_prob(),  ## p_t
-        #                         avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
-        #                         typeIerror = input$sig_level)
-        
-        power_vs_n_plot(avail_pattern = avail_input(),
-                                       f_t = f_t(),
-                                       g_t = g_t(),
-                                       beta = b_mat(),
-                                       alpha = a_mat(),
-                                       p_t = rand_prob(),
-                                       gamma = input$sig_level)
+        out <- tryCatch(
+            {
+                
+                message("This is the 'try' part")
+                
+                power_vs_n_plot(avail_pattern = avail_input(),
+                                    f_t = f_t(),
+                                    g_t = g_t(),
+                                    beta = b_mat(),
+                                    alpha = a_mat(),
+                                    p_t = rand_prob(),
+                                    gamma = input$sig_level)
+                
+            },
+            error=function(cond) {
+                message("Here's the original error message:")
+                message(cond)
+                # Choose a return value in case of error
+                return(NA)
+            },
+            warning=function(cond) {
+                message("Here's the original warning message:")
+                message(cond)
+                # Choose a return value in case of warning
+                return(NA)
+            },
+            finally={
+                message("Some other message at the end")
+            }
+        )    
+        return(out)
         
     })    
     
     
     output$power_vs_n1 <- renderPlot({
+        validate(need(!is.na(pow_vs_n_plot1()), 
+                      "Something went wrong. Check inputs and try again"))
         pow_vs_n_plot1()
     })
 
-    pow_vs_n_plot <- eventReactive(input$button_calculate_sample_size, {
+    pow_vs_n_plot2 <- eventReactive(input$button_calculate_sample_size, {
         # The determination of randomization probability is not well-implemented.
         # Need to think more carefully, because there are three sources of rand. prob.
         rv$ss_clicked <- TRUE        
-        # if (input$rand_prob_choices == "constant"){
-        #     rand_prob <- rep(input$rand_prob_const, total_decision_points())
-        #     rv$rp_shape <- "constant"
-        # } else if (input$rand_prob_choices == "tv_days") {
-        #     rand_prob <- rep(P_inter_days()$Randomization.Probability, 
-        #                      each = input$occ_per_day)
-        #     rv$rp_shape <- "time-varying"
-        # } else if (input$rand_prob_choices == "tv_dec_pts") {
-        #     rand_prob <- P_inter_dec()$Randomization.Probability
-        #     rv$rp_shape <- "time-varying"
-        # }
+ 
         
-        
-        # power_vs_n_plot_wrapper(p10 = p10(),
-        #                         pT0 = pT0(),
-        #                         p11 = p11(),
-        #                         pT1 = pT1(),
-        #                         total_T = total_decision_points(),
-        #                         alpha_shape = input$alpha_choices,
-        #                         beta_shape = input$beta_choices,
-        #                         rand_prob = rand_prob(),  ## p_t
-        #                         avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
-        #                         typeIerror = input$sig_level)  
-        
-        power_vs_n_plot(avail_pattern = avail_input(),
-                        f_t = f_t(),
-                        g_t = g_t(),
-                        beta = b_mat(),
-                        alpha = a_mat(),
-                        p_t = rand_prob(),
-                        gamma = input$sig_level)
+
+        out <- tryCatch(
+            {
+                
+                message("This is the 'try' part")
+                
+                power_vs_n_plot(avail_pattern = avail_input(),
+                                    f_t = f_t(),
+                                    g_t = g_t(),
+                                    beta = b_mat(),
+                                    alpha = a_mat(),
+                                    p_t = rand_prob(),
+                                    gamma = input$sig_level)
+                
+            },
+            error=function(cond) {
+                message("Here's the original error message:")
+                message(cond)
+                # Choose a return value in case of error
+                return(NA)
+            },
+            warning=function(cond) {
+                message("Here's the original warning message:")
+                message(cond)
+                # Choose a return value in case of warning
+                return(NA)
+            },
+            finally={
+                message("Some other message at the end")
+            }
+        )    
+        return(out)
     })    
 
     output$power_vs_n <- renderPlot({
@@ -1011,49 +952,54 @@ shinyServer(function(input,output,session){
 
     
     output$power_vs_n2 <- renderPlot({
+        validate(need(!is.na(pow_vs_n_plot2()), 
+                      "Something went wrong. Check inputs and try again."))
         pow_vs_n_plot2()
     })
     
     #### Power Summary ######
     pow_summary1 <- eventReactive(input$button_calculate_sample_size, {
-        # The determination of randomization probability is not well-implemented.
-        # Need to think more carefully, because there are three sources of rand. prob.
+
         rv$power_clicked <- TRUE
-        # if (input$rand_prob_choices == "constant"){
-        #     rand_prob <- rep(input$rand_prob_const, total_decision_points())
-        #     rv$rp_shape <- "constant"
-        # } else if (input$rand_prob_choices == "tv_days") {
-        #     rand_prob <- rep(P_inter_days()$Randomization.Probability, 
-        #                      each = input$occ_per_day)
-        #     rv$rp_shape <- "time-varying"
-        # } else if (input$rand_prob_choices == "tv_dec_pts") {
-        #     rand_prob <- P_inter_dec()$Randomization.Probability
-        #     rv$rp_shape <- "time-varying"
-        # }
-        
-        # 
-        # psw_out <-power_summary_wrapper(p10 = p10(),
-        #                                 pT0 = pT0(),
-        #                                 p11 = p11(),
-        #                                 pT1 = pT1(),
-        #                                 total_T = total_decision_points(),
-        #                                 alpha_shape = input$alpha_choices,
-        #                                 beta_shape = input$beta_choices,
-        #                                 rand_prob = rand_prob(),  ## p_t
-        #                                 avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
-        #                                 typeIerror = input$sig_level)  
-        # 
-        #return(psw_out)
-        power_summary(avail_pattern = avail_input(),
-                        f_t = f_t(),
-                        g_t = g_t(),
-                        beta = b_mat(),
-                        alpha = a_mat(),
-                        p_t = rand_prob(),
-                        gamma = input$sig_level)
+
+        out <- tryCatch(
+            {
+                
+                message("This is the 'try' part")
+                
+                power_summary(avail_pattern = avail_input(),
+                              f_t = f_t(),
+                              g_t = g_t(),
+                              beta = b_mat(),
+                              alpha = a_mat(),
+                              p_t = rand_prob(),
+                              gamma = input$sig_level)
+                
+            },
+            error=function(cond) {
+                message("Here's the original error message:")
+                message(cond)
+                # Choose a return value in case of error
+                return(NA)
+            },
+            warning=function(cond) {
+                message("Here's the original warning message:")
+                message(cond)
+                # Choose a return value in case of warning
+                return(NA)
+            },
+            finally={
+                message("Some other message at the end")
+            }
+        )    
+        return(out)
     })  
     
-    output$power_summary1 <- DT::renderDataTable({ pow_summary1() }) 
+    output$power_summary1 <- DT::renderDataTable({
+                                    validate(need(!is.na(pow_summary1()),
+                                                  "Something went wrong. Check inputs and try again."))
+                                    pow_summary1() 
+                                }) 
     
     
     pow_summary2 <- eventReactive(input$button_calculate_power, {
@@ -1062,38 +1008,38 @@ shinyServer(function(input,output,session){
         
         rv$power_clicked <- TRUE
         
-        # if (input$rand_prob_choices == "constant"){
-        #     rand_prob <- rep(input$rand_prob_const, total_decision_points())
-        #     rv$rp_shape <- "constant"
-        # } else if (input$rand_prob_choices == "tv_days") {
-        #     rand_prob <- rep(P_inter_days()$Randomization.Probability, 
-        #                      each = input$occ_per_day)
-        #     rv$rp_shape <- "time-varying"
-        # } else if (input$rand_prob_choices == "tv_dec_pts") {
-        #     rand_prob <- P_inter_dec()$Randomization.Probability
-        #     rv$rp_shape <- "time-varying"
-        # }
-        # 
         
-        # power_summary_wrapper(p10 = p10(),
-        #                       pT0 = pT0(),
-        #                       p11 = p11(),
-        #                       pT1 = pT1(),
-        #                       total_T = total_decision_points(),
-        #                       alpha_shape = input$alpha_choices,
-        #                       beta_shape = input$beta_choices,
-        #                       rand_prob = rand_prob(),  ## p_t
-        #                       avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
-        #                       typeIerror = input$sig_level)  
-        
-        
-        power_summary(avail_pattern = avail_input(),
-                      f_t = f_t(),
-                      g_t = g_t(),
-                      beta = b_mat(),
-                      alpha = a_mat(),
-                      p_t = rand_prob(),
-                      gamma = input$sig_level) 
+        out <- tryCatch(
+            {
+                
+                message("This is the 'try' part")
+                
+                power_summary(avail_pattern = avail_input(),
+                              f_t = f_t(),
+                              g_t = g_t(),
+                              beta = b_mat(),
+                              alpha = a_mat(),
+                              p_t = rand_prob(),
+                              gamma = input$sig_level)
+                
+            },
+            error=function(cond) {
+                message("Here's the original error message:")
+                message(cond)
+                # Choose a return value in case of error
+                return(NA)
+            },
+            warning=function(cond) {
+                message("Here's the original warning message:")
+                message(cond)
+                # Choose a return value in case of warning
+                return(NA)
+            },
+            finally={
+                message("Some other message at the end")
+            }
+        )    
+        return(out)
         
         
     })  
