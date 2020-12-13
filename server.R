@@ -651,7 +651,7 @@ shinyServer(function(input,output,session){
            out <- tryCatch(
                {
                    
-                   message("This is the 'try' part")
+                   message("Try calculate sample size")
                    
                    calculate_mrt_bin_samplesize_f(avail_pattern = avail_input(),
                                                   f_t = f_t(),
@@ -676,7 +676,7 @@ shinyServer(function(input,output,session){
                    return(NA)
                },
                finally={
-                   message("Some other message at the end")
+                   message("Exit sample size computation")
                }
            )    
            return(out)
@@ -710,7 +710,7 @@ shinyServer(function(input,output,session){
         out <- tryCatch(
             {
                 
-                message("This is the 'try' part")
+                message("Try calculate power")
                 
                 calculate_mrt_bin_power_f(avail_pattern = avail_input(),
                                           f_t = f_t(),
@@ -735,7 +735,7 @@ shinyServer(function(input,output,session){
                 return(NA)
             },
             finally={
-                message("Some other message at the end")
+                message("Exit calculate power")
             }
         )    
         return(out)
@@ -868,7 +868,7 @@ shinyServer(function(input,output,session){
         out <- tryCatch(
             {
                 
-                message("This is the 'try' part")
+                message("Try power vs n plot")
                 
                 power_vs_n_plot(avail_pattern = avail_input(),
                                     f_t = f_t(),
@@ -892,7 +892,7 @@ shinyServer(function(input,output,session){
                 return(NA)
             },
             finally={
-                message("Some other message at the end")
+                message("Exit power vs n plot")
             }
         )    
         return(out)
@@ -916,7 +916,7 @@ shinyServer(function(input,output,session){
         out <- tryCatch(
             {
                 
-                message("This is the 'try' part")
+                message("Try power vs n plot")
                 
                 power_vs_n_plot(avail_pattern = avail_input(),
                                     f_t = f_t(),
@@ -940,7 +940,7 @@ shinyServer(function(input,output,session){
                 return(NA)
             },
             finally={
-                message("Some other message at the end")
+                message("Exit plot power vs n")
             }
         )    
         return(out)
@@ -965,7 +965,7 @@ shinyServer(function(input,output,session){
         out <- tryCatch(
             {
                 
-                message("This is the 'try' part")
+                message("Enter try for power summary")
                 
                 power_summary(avail_pattern = avail_input(),
                               f_t = f_t(),
@@ -989,7 +989,7 @@ shinyServer(function(input,output,session){
                 return(NA)
             },
             finally={
-                message("Some other message at the end")
+                message("exit power summary")
             }
         )    
         return(out)
@@ -1012,7 +1012,7 @@ shinyServer(function(input,output,session){
         out <- tryCatch(
             {
                 
-                message("This is the 'try' part")
+                message("Enter try for power summary.")
                 
                 power_summary(avail_pattern = avail_input(),
                               f_t = f_t(),
@@ -1036,7 +1036,7 @@ shinyServer(function(input,output,session){
                 return(NA)
             },
             finally={
-                message("Some other message at the end")
+                message("Exit power summary.")
             }
         )    
         return(out)
