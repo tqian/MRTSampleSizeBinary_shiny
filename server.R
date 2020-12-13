@@ -185,6 +185,35 @@ shinyServer(function(input,output,session){
                               length.out = total_decision_points())
             
             result <- exp(result_log)
+        } else if (input$alpha_choices == "logquadratic"){
+           validate(
+                need(input$alpha_logquad_initial > 0, 
+                     "Error: Please specify the initial value of baseline success probability greater than 0"),
+                need(input$alpha_logquad_change_val > 0, 
+                     "Error: Please specify the final value of baseline success probability greater than 0"),
+                need(input$alpha_logquad_change_pt > 0, 
+                     "Error: Please specify the final value of baseline success probability greater than 0")
+            )
+            
+            k1 <- log(input$alpha_logquad_initial)
+            k2 <- input$alpha_logquad_change_pt
+            k3 <- log(input$alpha_logquad_change_val)
+            
+            validate(need(k2 != 0, "Error: Change point cannot be starting point"))
+            
+            a2 <- (2 * k1 * k2 - 2 * k3 * k2) / (2 * k2 * (1 - k2/2) - 1)
+            a1 <- k1 - k3 - (1 - k2/2) * a2
+            a3 <- k1 - a1 - a2
+            
+            t_mat <- cbind(rep(1, times=total_decision_points()),
+                           1:total_decision_points(),
+                           (1:total_decision_points())^2)
+            
+            a_mat <- as.matrix(c(a1, a2, a3), ncol=1)
+            
+            result <- exp(t_mat %*% a_mat) 
+            print(result)
+            print(a_mat)
         }
         validate(
             need(min(result) > 0,
@@ -238,6 +267,40 @@ shinyServer(function(input,output,session){
                               length.out = total_decision_points())
             
             result <- exp(result_log)
+            
+        } else if (input$beta_choices == "logquadratic"){
+            
+            print('beta quad')
+            validate(
+                need(input$beta_logquad_initial > 0, 
+                     "Error: Please specify the initial value of baseline success probability greater than 0"),
+                need(input$beta_logquad_change_val > 0, 
+                     "Error: Please specify the final value of baseline success probability greater than 0"),
+                need(input$beta_logquad_change_pt > 0, 
+                     "Error: Please specify the final value of baseline success probability greater than 0")
+            )
+            
+            print('beta put')
+            
+            k1 <- log(input$beta_logquad_initial)
+            k2 <- input$beta_logquad_change_pt
+            k3 <- log(input$beta_logquad_change_val)
+            
+            validate(need(k2 != 0, "Error: Change point cannot be starting point"))
+            
+            b2 <- (2 * k1 * k2 - 2 * k3 * k2) / (2 * k2 * (1 - k2/2) - 1)
+            b1 <- k1 - k3 - (1 - k2/2) * b2
+            b3 <- k1 - b1 - b2
+            
+            t_mat <- cbind(rep(1, times=total_decision_points()),
+                           1:total_decision_points(),
+                           (1:total_decision_points())^2)
+            
+            b_mat <- as.matrix(c(b1, b2, b3), ncol=1)
+            
+            result <- exp(t_mat %*% b_mat) 
+            print(result)
+            print(b_mat)
         }
         validate(
             need(min(result * alpha_input()) > 0,

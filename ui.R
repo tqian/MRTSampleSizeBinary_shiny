@@ -382,13 +382,13 @@ shinyUI(fluidPage(
             label = "Initial Value of Success Probability Null Curve", 
             min = 0, max = 1,value = 0.6),
           sliderInput(
-            "alpha_logquad_change",
-            label="Change point Value of Success Probability Null Curve", 
+            "alpha_logquad_change_val",
+            label="Change Point Value of Success Probability Null Curve", 
             min = 0, max = 1,value = 0.4),
-          sliderInput(
-            "alpha_logquad_final",
-            label="Final Value of Success Probability Null Curve", 
-            min = 0, max = 1,value = 0.4), 
+          numericInput(
+            "alpha_logquad_change_pt",
+            label="Change point of Success Probability Null Curve", 
+            value = 10),
           p(em("Notes"),
             ": The success probability under no treatment varies 
                  quadratically over the study.")
@@ -451,12 +451,31 @@ shinyUI(fluidPage(
                               p(em("Notes"),
                               ": The loglinearly increasing form of a proximal treatment effect might be used if participants will get more enthusiastically engage in the apps and thus the proximal treatment effect will increase as the study goes."),
                               p("The loglinearly decreasing form of a proximal treatment effect might be used if participantsare likely to disengage the activity suggestionss and thus the proximal treatment effect will decrease as the  study goes.")
+             ),
+             ### Inputs for logquadratic trend of proximal treatment effect ###
+             conditionalPanel(
+               condition="input.beta_choices == 'logquadratic' ",
+               sliderInput(
+                 "beta_logquad_initial", 
+                 label = "Initial Value of Proximal Treatment Effect", 
+                 min = 0, max = 1,value = 0.6),
+               sliderInput(
+                 "beta_logquad_change_val",
+                 label="Change Point Value of Proximal Treatment Effect", 
+                 min = 0, max = 1,value = 0.4),
+               numericInput(
+                 "beta_logquad_change_pt",
+                 label="Change point of Proximal Treatment Effect", 
+                 value = 10),
+               p(em("Notes"),
+                 ": The proximal treatment effect under no treatment varies 
+                 quadratically over the study.")
              )
       ),
       column(1),
       column(6,
-             conditionalPanel(condition="['constant', 'loglinear'].includes(input.beta_choices)
-                            && ['constant', 'loglinear'].includes(input.alpha_choices)",
+             conditionalPanel(condition="['constant', 'loglinear', 'logquadratic'].includes(input.beta_choices)
+                            && ['constant', 'loglinear', 'logquadratic'].includes(input.alpha_choices)",
                               plotOutput("beta_graph"))
       )
       

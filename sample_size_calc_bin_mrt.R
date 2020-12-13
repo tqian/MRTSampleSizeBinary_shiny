@@ -172,12 +172,16 @@ calculate_mrt_bin_power_wrapper <- function(p10, pT0, p11, pT1,
         g_t <- matrix(1, nrow = total_T, ncol = 1)
     } else if (alpha_shape == "loglinear") {
         g_t <- cbind(1, 1:total_T)
+    } else if (beta_shape == "logquadratic"){
+        g_t <- cbind(1, 1:total_T, (1:total_T)^2)
     }
     
     if (beta_shape == "constant") {
         f_t <- matrix(1, nrow = total_T, ncol = 1)
     } else if (beta_shape == "loglinear") {
         f_t <- cbind(1, 1:total_T)
+    } else if (beta_shape == "logquadratic"){
+        f_t <- cbind(1, 1:total_T, (1:total_T)^2)
     }
     
     power <- calculate_mrt_bin_power_f(avail_pattern = avail_pattern,
@@ -229,6 +233,10 @@ compute_alpha_beta_from_prob <- function(p10, pT0, p11, pT1, total_T,
     } else if (alpha_shape == "loglinear") {
         alpha <- c(alpha_0, alpha_1)
     } else if (alpha_shape == "logquadratic"){
+        
+        
+        
+        
         alpha <- c(alpha_0, alpha_1, alpha_2)
     }
     
