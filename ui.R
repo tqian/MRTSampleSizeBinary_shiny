@@ -1,7 +1,10 @@
 library(shiny)
 library(shinyBS)
+library(shinythemes)
 
-shinyUI(fluidPage(
+
+
+shinyUI(fluidPage(theme = shinytheme("readable"),
   titlePanel("Sample Size Calculator for Micro-Randomized Trials with Binary Outcomes"),    
   
   ####Sample Size Calculator Simple version####
@@ -39,7 +42,7 @@ shinyUI(fluidPage(
     h3("Purpose"),
     p("This applet provides a sample size calculator for Micro-randomized Trials with binary outcomes. The sample size formula is developed in",
       a("Sample Size Considerations for Micro-Randomized Trials with Binary Outcome", href="https://sites.google.com/view/tianchen-qian/research"),
-      ", which is currently work in progress. Please contact Tianchen Qian (qiantianchen.thu@gmail.com) if you would like a copy of the draft manuscript."),
+      ", which is currently a work in progress. Please contact Tianchen Qian (qiantianchen.thu@gmail.com) if you would like a copy of the draft manuscript."),
     
     ### Inputs Required ###
     
@@ -150,7 +153,7 @@ shinyUI(fluidPage(
       ),
       column(6,
              textOutput("setting_warning")  ### output warnings when you type in wrong format for
-      )                                     ### "Durarion of the study" and "Number of decision time
+      )                                     ### "Duration of the study" and "Number of decision time
     ),                                      ### per day"
     br(),
     
