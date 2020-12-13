@@ -906,7 +906,7 @@ shinyServer(function(input,output,session){
         pow_vs_n_plot1()
     })
 
-    pow_vs_n_plot <- eventReactive(input$button_calculate_sample_size, {
+    pow_vs_n_plot2 <- eventReactive(input$button_calculate_sample_size, {
         # The determination of randomization probability is not well-implemented.
         # Need to think more carefully, because there are three sources of rand. prob.
         rv$ss_clicked <- TRUE        
