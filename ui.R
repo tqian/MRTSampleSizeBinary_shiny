@@ -397,8 +397,10 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
              template and then try uploading them."
             ),
           downloadButton("days_template", "Template"),
-          p("In the sample file, the randomization probability is contantly 0.4"),
-          p("The number of inputs for this file should be equal to the number of days."),
+          p("In the sample file, the randomization probability is contantly 
+             0.4"),
+          p("The number of inputs for this file should be equal to the number 
+             of days."),
           p("Showing the first 5 rows of the uploaded file."),
           dataTableOutput("P_inter_table_days")
           ),
@@ -488,7 +490,7 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
             no treatment will decrease as the study goes.")
         ),
              
-             ### Inputs for logquadratic trend of success probability null curve ###
+        ### Inputs for logquadratic trend of success probability null curve ###
         conditionalPanel(
           condition = "input.alpha_choices == 'logquadratic' ",
           sliderInput(
@@ -621,7 +623,7 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
     
     
     
-    ### Specifying whether you are interested in calculating the sample size or the power ###
+    ### Specifying sample size or the power ###
     fluidRow(
       column(
         4,
@@ -636,7 +638,7 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
       column(
         4,
              
-        ### type in the desired power if you want to calculate the sample size ###
+        ### type in power for sample size calculation ###
         conditionalPanel(
           condition = "input.radio_choices=='choice_sample_size'",
           numericInput(
@@ -645,7 +647,7 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
             value = 0.8)
           ),
              
-        ### type in the sample size if you want to calculate the power attained ###
+        ### type in sample size if you want to calculate the power attained ###
         conditionalPanel(
           condition = "input.radio_choices=='choice_power'",
           numericInput(
@@ -665,19 +667,19 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
       column(
         4,
              
-        ### Output warnings if you type in wrong format for "desired power" ###
+        ### Output warnings for wrong format in "desired power" ###
         conditionalPanel(
           condition = "input.radio_choices=='choice_sample_size'",
           textOutput("choice_sample_size_warning")
           ),
              
-        ### Output warnings if you type in wrong format for "Number of participants" ###
+        ### Output warnings for wrong format in "Number of participants" ###
         conditionalPanel(
           condition = "input.radio_choices=='choice_power'",
           textOutput("choice_power_warning")
           ),
              
-        ### Output warnings if you type in wrong format for "Significance level" ###
+        ### Output warnings for wrong format in "Significance level" ###
         textOutput("significance_warning")
       )
     ),
