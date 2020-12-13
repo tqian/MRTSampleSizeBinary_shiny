@@ -522,7 +522,12 @@ shinyServer(function(input,output,session){
                lty = c(1,2), 
                pch=c(16,NA),bty = "n")
     })
+ 
     
+
+    
+    ##### Calculate Sample Size #####
+
     
     
     
@@ -843,6 +848,7 @@ shinyServer(function(input,output,session){
         }
     })
     
+
     #output$sample_size_history_table <- renderDataTable({ss_hist_tab()})
 
     
@@ -899,8 +905,8 @@ shinyServer(function(input,output,session){
                       "Something went wrong. Check inputs and try again"))
         pow_vs_n_plot1()
     })
-    
-    pow_vs_n_plot2 <- eventReactive(input$button_calculate_power, {
+
+    pow_vs_n_plot <- eventReactive(input$button_calculate_sample_size, {
         # The determination of randomization probability is not well-implemented.
         # Need to think more carefully, because there are three sources of rand. prob.
         rv$ss_clicked <- TRUE        
@@ -939,6 +945,11 @@ shinyServer(function(input,output,session){
         )    
         return(out)
     })    
+
+    output$power_vs_n <- renderPlot({
+        pow_vs_n_plot()
+    })    
+
     
     output$power_vs_n2 <- renderPlot({
         validate(need(!is.na(pow_vs_n_plot2()), 
@@ -1036,7 +1047,7 @@ shinyServer(function(input,output,session){
     output$power_summary2 <- DT::renderDataTable({pow_summary2()}) 
     
     
-    
+
     power_history <- reactiveValues(avail_pattern = c(), 
                                     avail_init = c(), 
                                     avail_final = c(),
