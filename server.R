@@ -1,5 +1,6 @@
 library(shiny)
 library(DT)
+library(ggplot2)
 source("sample_size_calc_bin_mrt.R")
 
 shinyServer(function(input,output,session){
@@ -309,7 +310,7 @@ shinyServer(function(input,output,session){
     b_mat <- reactive({
         if (!is.null(alpha_input())){
         # Initialize some value to avoid some internal error when running locally
-        # This part should have not effect on the UI.
+        # This part should have no effect on the UI.
         result <- 1
         if (input$beta_choices == "constant") {
             
