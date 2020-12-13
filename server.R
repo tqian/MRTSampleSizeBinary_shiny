@@ -219,7 +219,6 @@ shinyServer(function(input,output,session){
     
     # gmatrix
     g_t <- reactive({
-      #  if(!is.null(a_mat())) {
             if (input$alpha_choices == "constant") {
                 
                 t_mat <- as.matrix(rep(1, times = total_decision_points()))
@@ -244,8 +243,6 @@ shinyServer(function(input,output,session){
                 return(t_mat)
             }
             
-            
-        #}
     })
     
     alpha_input <- reactive({
@@ -259,26 +256,28 @@ shinyServer(function(input,output,session){
     ### plot of the graphs for the baseline success probability ###
     
     output$alpha_graph <- renderPlot({
-      ## ggplot in the works
-      y1 = alpha_input()
-      x1 = seq(1:length(alpha_input()) )
-      df_alpha <- data.frame(x1, y1)
-      ggplot(df_alpha)+
-      geom_line(aes( y = alpha_input(), 
+      if (!is.null(alpha_input())){
+        validate(need(max(alpha_input()) < 1 && min(alpha_input()) > 0,
+                    "Invalid probabilities. Must be between 0 and 1."))   
+     
+        ## ggplot in the works
+        y1 = alpha_input()
+        x1 = seq(1:length(alpha_input()) )
+        df_alpha <- data.frame(x1, y1)
+        ggplot(df_alpha)+
+        geom_line(aes( y = alpha_input(), 
                      x = seq(1:length(alpha_input()))), size = 1, 
-                color = "deepskyblue3")+
+                color = "deepskyblue3", group=1)+
         ggtitle("Success Probability Null Curve") +
         xlab("Decision Point") + ylab("Baseline Success Probability")+
         ylim(0,1)+
         theme(axis.text = element_text(size=12),
               axis.title = element_text(size=14))
       
-      
+      }
     })
     
     
-    #### Calculating proximal treatment effect (relative risk) ####
-
 # Calculate proximal treatment effect -------------------------------------
     # f matrix
     f_t <- reactive({
@@ -319,7 +318,6 @@ shinyServer(function(input,output,session){
                      "Error: Please specify the proximal treatment effect greater than 0")
             )
             
-            #result <- rep(input$beta_constant_mean, total_decision_points())
             
             result <- matrix(c(log(input$beta_constant_mean)), ncol=1)
         
@@ -336,7 +334,6 @@ shinyServer(function(input,output,session){
             result_log <- seq(from = initial_log, to = final_log, 
                               length.out = total_decision_points())
             
-            #result <- exp(result_log)
             
             slope <- (final_log - initial_log)/total_decision_points()
             
@@ -436,8 +433,6 @@ shinyServer(function(input,output,session){
 # Expected availability ---------------------------------------------------
     
     avail_input <- reactive({
-        # Initialize some value to avoid some internal error when running locally
-        # This part should have not effect on the UI.
         result <- 0.5
 
         if (input$avail_choices == "constant") {
