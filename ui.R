@@ -1,7 +1,7 @@
 library(shiny)
 library(shinyBS)
 
-shinyUI(fluidPage(
+shinyUI(fluidPage(theme = "bootstrap.css", 
   titlePanel("Sample Size Calculator for Micro-Randomized Trials with Binary Outcomes"),    
   
   ####Sample Size Calculator Simple version####
