@@ -259,14 +259,21 @@ shinyServer(function(input,output,session){
     ### plot of the graphs for the baseline success probability ###
     
     output$alpha_graph <- renderPlot({
-        plot(alpha_input(), 
-             xlab = "Decision Point", 
-             ylab = "Baseline Success Probability", 
-             ylim = c(0, 1), 
-             type = "o",
-             pch = 16, 
-             cex = 0.8, 
-             col = 4)
+      ## ggplot in the works
+      y1 = alpha_input()
+      x1 = seq(1:length(alpha_input()) )
+      df_alpha <- data.frame(x1, y1)
+      ggplot(df_alpha)+
+      geom_line(aes( y = alpha_input(), 
+                     x = seq(1:length(alpha_input()))), size = 1, 
+                color = "deepskyblue3")+
+        ggtitle("Success Probability Null Curve") +
+        xlab("Decision Point") + ylab("Baseline Success Probability")+
+        ylim(0,1)+
+        theme(axis.text = element_text(size=12),
+              axis.title = element_text(size=14))
+      
+      
     })
     
     
@@ -382,31 +389,37 @@ shinyServer(function(input,output,session){
     })
     
     output$beta_graph <- renderPlot({
-        if(!is.null(alpha_input()) && !is.null(beta_input())){
-        plot(alpha_input() * beta_input(), 
-             xlab = "Decision Point", 
-             ylab = "Success Probability", 
-             ylim = c(0, 1), 
-             type = "o",
-             pch = 16, 
-             cex = 0.8, 
-             col = 2)
+      if(!is.null(alpha_input()) && !is.null(beta_input())){
+        ggplot()+ aes(x = 1:length(alpha_input()),
+                         y = (alpha_input() * beta_input()))
         
-        points(x = 1:length(alpha_input()), 
-               y = alpha_input(), 
-               type = "o", 
-               pch = 16, 
-               cex = 0.8, 
-               col = 4)
-        
-        legend("topleft", 
-               cex = 1, 
-               legend=c('Alternate Hypothesis', 'Null Hypothesis'),
-               col = c(2,4),
-               lty = c(1,1), 
-               pch=c(16,16),
-               bty = "n")
-        }
+      }
+      
+        # if(!is.null(alpha_input()) && !is.null(beta_input())){
+        # plot(alpha_input() * beta_input(), 
+        #      xlab = "Decision Point", 
+        #      ylab = "Success Probability", 
+        #      ylim = c(0, 1), 
+        #      type = "o",
+        #      pch = 16, 
+        #      cex = 0.8, 
+        #      col = 2)
+        # 
+        # points(x = 1:length(alpha_input()), 
+        #        y = alpha_input(), 
+        #        type = "o", 
+        #        pch = 16, 
+        #        cex = 0.8, 
+        #        col = 4)
+        # 
+        # legend("topleft", 
+        #        cex = 1, 
+        #        legend=c('Alternate Hypothesis', 'Null Hypothesis'),
+        #        col = c(2,4),
+        #        lty = c(1,1), 
+        #        pch=c(16,16),
+        #        bty = "n")
+        # }
     })
     
     
