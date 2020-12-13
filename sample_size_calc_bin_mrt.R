@@ -114,6 +114,8 @@ calculate_mrt_bin_samplesize_wrapper <- function(p10, pT0, p11, pT1,
                                                  total_T,
                                                  alpha_shape = c("constant", "loglinear", "logquadratic"),
                                                  beta_shape = c("constant", "loglinear", "logquadratic"),
+                                                 alpha_input,
+                                                 beta_input,
                                                  rand_prob,  ## p_t
                                                  avail_pattern, ## E[I_t]  # TQ: will assume this is vector of length T
                                                  typeIerror,
@@ -121,7 +123,7 @@ calculate_mrt_bin_samplesize_wrapper <- function(p10, pT0, p11, pT1,
     alpha_shape <- match.arg(alpha_shape)
     beta_shape <- match.arg(beta_shape)
     
-    alpha_beta_ate <- compute_alpha_beta_from_prob(p10, pT0, p11, pT1, total_T, alpha_shape, beta_shape)
+    #alpha_beta_ate <- compute_alpha_beta_from_prob(p10, pT0, p11, pT1, total_T, alpha_shape, beta_shape)
     
     if (alpha_shape == "constant") {
         g_t <- matrix(1, nrow = total_T, ncol = 1)
@@ -140,15 +142,24 @@ calculate_mrt_bin_samplesize_wrapper <- function(p10, pT0, p11, pT1,
         f_t <- cbind(1, 1:total_T, (1:total_T)^2)
     }
     
+    # sample_size <- calculate_mrt_bin_samplesize_f(avail_pattern = avail_pattern,
+    #                                     f_t = f_t,
+    #                                     g_t = g_t,
+    #                                     beta = alpha_beta_ate$beta,
+    #                                     alpha = alpha_beta_ate$alpha,
+    #                                     p_t = rand_prob,
+    #                                     gamma = typeIerror,
+    #                                     b = 1 - power,
+    #                                     exact = FALSE)
     sample_size <- calculate_mrt_bin_samplesize_f(avail_pattern = avail_pattern,
-                                        f_t = f_t,
-                                        g_t = g_t,
-                                        beta = alpha_beta_ate$beta,
-                                        alpha = alpha_beta_ate$alpha,
-                                        p_t = rand_prob,
-                                        gamma = typeIerror,
-                                        b = 1 - power,
-                                        exact = FALSE)
+                                                  f_t = f_t,
+                                                  g_t = g_t,
+                                                  beta = beta_input,
+                                                  alpha = alpha_input,
+                                                  p_t = rand_prob,
+                                                  gamma = typeIerror,
+                                                  b = 1 - power,
+                                                  exact = FALSE)
     return(sample_size)
 }
 
