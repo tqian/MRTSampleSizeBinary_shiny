@@ -553,23 +553,10 @@ shinyServer(function(input,output,session){
                lty = c(1,2), 
                pch=c(16,NA),bty = "n")
     })
-    ###############______beging_______Trying to input file--------######
-    
-    fileInput(
-        inputId,
-        label = null,
-        multiple = FALSE,
-        accept = ".csv",
-        width = NULL,
-        buttonLabel = "Browse...",
-        placeholder = "No file selected"
-    )
-    
-    
+ 
     
 
     
-    ###############______end_______Trying to input file--------######
     ##### Calculate Sample Size #####
 
     
