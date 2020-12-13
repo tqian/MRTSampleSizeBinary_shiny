@@ -33,6 +33,6 @@ available people who are assigned a treatment versus available people who are
 not assigned treatment. In this work, we only consider the binary treatment. You
 need to provide the trend of proximal treatment effects.
 
-The outputs one can get using this package are mainly two values, power and
+The outputs one can get using this shiny app are mainly two values, power and
 sample size. In both cases, you will need to input the desired significance
-level.
+level. The user will also be able to see how power changes as the sample size with a continuous curve.  This is to her the used visualize this relationship with provided information form the used in the study set up. 
