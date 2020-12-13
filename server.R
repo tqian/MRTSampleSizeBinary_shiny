@@ -156,21 +156,23 @@ shinyServer(function(input,output,session){
     
     #### Calculating baseline success probability ####
     
-    alpha_input <- reactive({
+    a_mat <- reactive({
         # Initialize some value to avoid some internal error when running locally
         # This part should have not effect on the UI.
         result <- 0.5
         if (input$alpha_choices == "constant") {
-            
+            print('const amat')
             validate(
                 need(input$alpha_constant_mean > 0, 
                      "Error: Please specify the baseline success probability greater than 0")
             )
             
-            result <- rep(input$alpha_constant_mean, total_decision_points())
+            #result <- rep(input$alpha_constant_mean, total_decision_points())
+            
+            result <- matrix(log(input$alpha_constant_mean))
             
         } else if (input$alpha_choices == "loglinear") {
-            
+            print("loglinear amat")
             validate(
                 need(input$alpha_loglinear_initial > 0, 
                      "Error: Please specify the initial value of baseline success probability greater than 0"),
@@ -180,12 +182,17 @@ shinyServer(function(input,output,session){
             
             initial_log <- log(input$alpha_loglinear_initial)
             final_log <- log(input$alpha_loglinear_final)
-            result_log <- seq(from = initial_log, 
-                              to = final_log, 
-                              length.out = total_decision_points())
+           # result_log <- seq(from = initial_log, 
+        #                      to = final_log, 
+          #                    length.out = total_decision_points())
             
-            result <- exp(result_log)
+            slope <- (final_log - initial_log) / total_decision_points() 
+            
+            result <- matrix(c(initial_log - slope, slope ), ncol=1)
+            
+            # result <- exp(result_log)
         } else if (input$alpha_choices == "logquadratic"){
+            print("logquad amat")
            validate(
                 need(input$alpha_logquad_initial > 0, 
                      "Error: Please specify the initial value of baseline success probability greater than 0"),
@@ -194,6 +201,7 @@ shinyServer(function(input,output,session){
                 need(input$alpha_logquad_change_pt > 0, 
                      "Error: Please specify the final value of baseline success probability greater than 0")
             )
+           print('pass validation lq')
             
             k1 <- log(input$alpha_logquad_initial)
             k2 <- input$alpha_logquad_change_pt
@@ -205,23 +213,72 @@ shinyServer(function(input,output,session){
             a1 <- k1 - k3 - (1 - k2/2) * a2
             a3 <- k1 - a1 - a2
             
-            t_mat <- cbind(rep(1, times=total_decision_points()),
-                           1:total_decision_points(),
-                           (1:total_decision_points())^2)
+            #t_mat <- cbind(rep(1, times=total_decision_points()),
+             #              1:total_decision_points(),
+            #               (1:total_decision_points())^2)
             
             a_mat <- as.matrix(c(a1, a2, a3), ncol=1)
             
-            result <- exp(t_mat %*% a_mat) 
-            print(result)
-            print(a_mat)
+            #result <- exp(t_mat %*% a_mat) 
+            #print(result)
+            #print(a_mat)
+            
+            result <- a_mat
+            print('exit lq')
         }
-        validate(
-            need(min(result) > 0,
-                 "Warning: Some values of baseline success probability are less than or equal to 0"),
-            need(max(result) <= 1,
-                 "Warning: Some values of baseline success probability are greater than 1")
-        )
+        # validate(
+        #     need(min(result) > 0,
+        #          "Warning: Some values of baseline success probability are less than or equal to 0"),
+        #     need(max(result) <= 1,
+        #          "Warning: Some values of baseline success probability are greater than 1")
+        # )
         result
+    })
+    
+    g_t <- reactive({
+      #  if(!is.null(a_mat())) {
+        print('in gt')
+            if (input$alpha_choices == "constant") {
+                
+                t_mat <- as.matrix(rep(1, times = total_decision_points()))
+                return(t_mat)
+            } else if (input$alpha_choices == "loglinear"){
+                
+                t_mat <- as.matrix(cbind(rep(1, times = total_decision_points()),
+                               1:total_decision_points()))
+                return(t_mat)
+            
+            } else if (input$alpha_choices == "logquadratic"){
+                print(total_decision_points())
+                print(rep(1, times=total_decision_points()))
+                print(1:total_decision_points())
+                print((1:total_decision_points())^2)
+                
+                one <- rep(1, times = total_decision_points())
+                two <- 1:total_decision_points()
+                three <- two^2
+                t_mat <- as.matrix(cbind(one, two, three))
+                
+                print(t_mat)
+
+                
+                return(t_mat)
+            }
+            
+            
+        #}
+    })
+    
+    alpha_input <- reactive({
+        print('alpha input')
+        print(g_t())
+        print(a_mat())
+        if(!is.null(a_mat()) && !is.null(g_t())) {
+            print("amat and gt are fine")
+            return(exp(g_t() %*% a_mat()))
+        } else {
+            return(.5)
+        }
     })
     
     ### plot of the graphs for the baseline success probability ###
@@ -239,8 +296,38 @@ shinyServer(function(input,output,session){
     
     
     #### Calculating proximal treatment effect (relative risk) ####
+
+    f_t <- reactive({
+        #if(!is.null(b_mat())) {
+            if (input$beta_choices == "constant") {
+                
+                t_mat <- as.matrix(rep(1, times = total_decision_points()))
+                return(t_mat)
+            } else if (input$beta_choices == "loglinear"){
+                
+                t_mat <- as.matrix(cbind(rep(1, times = total_decision_points()),
+                               1:total_decision_points()))
+                return(t_mat)
+                
+            } else if (input$beta_choices == "logquadratic"){
+                one <- rep(1, times = total_decision_points())
+                two <- 1:total_decision_points()
+                three <- two^2
+                t_mat <- as.matrix(cbind(one, two, three))
+
+                return(t_mat)
+            }
+            
+
+       # }
+    })
     
-    beta_input <- reactive({
+    
+    
+    b_mat <- reactive({
+        if (!is.null(alpha_input())){
+            print('bet input not alpha null')
+            print(alpha_input())
         # Initialize some value to avoid some internal error when running locally
         # This part should have not effect on the UI.
         result <- 1
@@ -251,8 +338,10 @@ shinyServer(function(input,output,session){
                      "Error: Please specify the proximal treatment effect greater than 0")
             )
             
-            result <- rep(input$beta_constant_mean, total_decision_points())
+            #result <- rep(input$beta_constant_mean, total_decision_points())
             
+            result <- matrix(c(log(input$beta_constant_mean)), ncol=1)
+        
         } else if (input$beta_choices == "loglinear") {
             validate(
                 need(input$beta_loglinear_initial > 0, 
@@ -266,7 +355,11 @@ shinyServer(function(input,output,session){
             result_log <- seq(from = initial_log, to = final_log, 
                               length.out = total_decision_points())
             
-            result <- exp(result_log)
+            #result <- exp(result_log)
+            
+            slope <- (final_log - initial_log)/total_decision_points()
+            
+            result <- matrix(c(initial_log - slope, slope), ncol=1)
             
         } else if (input$beta_choices == "logquadratic"){
             
@@ -301,19 +394,29 @@ shinyServer(function(input,output,session){
             result <- exp(t_mat %*% b_mat) 
             print(result)
             print(b_mat)
+            
+            result <- b_mat
         }
-        validate(
-            need(min(result * alpha_input()) > 0,
-                 "Warning: Some values of success probability are less than or equal to 0"),
-            need(max(result * alpha_input()) <= 1,
-                 "Warning: Some values of success probability are greater than 1")
-        )
+        # validate(
+        #     need(min(result * alpha_input()) > 0,
+        #          "Warning: Some values of success probability are less than or equal to 0"),
+        #     need(max(result * alpha_input()) <= 1,
+        #          "Warning: Some values of success probability are greater than 1")
+        # )
         result
+        }
+    })
+    
+    beta_input <- reactive({
+        if(!is.null(b_mat()) && !is.null(f_t())){
+            return(exp(f_t() %*% b_mat()))
+        }
     })
     
     ### plot of the graphs for the proximal treatment effect ###
     
     output$beta_graph <- renderPlot({
+        if(!is.null(alpha_input()) && !is.null(beta_input())){
         plot(alpha_input() * beta_input(), 
              xlab = "Decision Point", 
              ylab = "Success Probability", 
@@ -337,19 +440,19 @@ shinyServer(function(input,output,session){
                lty = c(1,1), 
                pch=c(16,16),
                bty = "n")
+        }
     })
     
     
     ### p10, p11, pT0, pT1 ###
     
-    p10 <- reactive({alpha_input()[1]})
+    p10 <- reactive({NULL}) #reactive({alpha_input()[1]})
     
-    pT0 <- reactive({alpha_input()[total_decision_points()]})
+    pT0 <- reactive({NULL}) #reactive({alpha_input()[total_decision_points()]})
     
-    p11 <- reactive({alpha_input()[1] * beta_input()[1]})
+    p11 <- reactive({NULL}) #reactive({alpha_input()[1] * beta_input()[1]})
     
-    pT1 <- reactive({alpha_input()[total_decision_points()] *
-            beta_input()[total_decision_points()]})
+    pT1 <- reactive({NULL}) #reactive({alpha_input()[total_decision_points()] * beta_input()[total_decision_points()]})
     
     #### Expected Availability ####
     
@@ -619,17 +722,30 @@ shinyServer(function(input,output,session){
        
         print(rand_prob()) 
         rv$ss_clicked <- TRUE
-        calculate_mrt_bin_samplesize_wrapper(p10 = p10(),
-                                             pT0 = pT0(),
-                                             p11 = p11(),
-                                             pT1 = pT1(),
-                                             total_T = total_decision_points(),
-                                             alpha_shape = input$alpha_choices,
-                                             beta_shape = input$beta_choices,
-                                             rand_prob = rand_prob(),  ## p_t
-                                             avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
-                                             typeIerror = input$sig_level,
-                                             power = input$power)
+        # calculate_mrt_bin_samplesize_wrapper(p10 = p10(),
+        #                                      pT0 = pT0(),
+        #                                      p11 = p11(),
+        #                                      pT1 = pT1(),
+        #                                      total_T = total_decision_points(),
+        #                                      alpha_shape = input$alpha_choices,
+        #                                      beta_shape = input$beta_choices,
+        #                                      alpha_input = alpha_input(),
+        #                                      beta_input = beta_input(),
+        #                                      rand_prob = rand_prob(),  ## p_t
+        #                                      avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
+        #                                      typeIerror = input$sig_level,
+        #                                      power = input$power)
+        print("ft/gt")
+        print(f_t())
+        print(g_t())
+        calculate_mrt_bin_samplesize_f(avail_pattern = avail_input(),
+                                       f_t = f_t(),
+                                       g_t = g_t(),
+                                       beta = b_mat(),
+                                       alpha = a_mat(),
+                                       p_t = rand_prob(),
+                                       gamma = input$sig_level,
+                                       b = 1-input$power)
         
         
     })
@@ -671,18 +787,26 @@ shinyServer(function(input,output,session){
         # }
         # 
         
-        
-        calculate_mrt_bin_power_wrapper(p10 = p10(),
-                                        pT0 = pT0(),
-                                        p11 = p11(),
-                                        pT1 = pT1(),
-                                        total_T = total_decision_points(),
-                                        alpha_shape = input$alpha_choices,
-                                        beta_shape = input$beta_choices,
-                                        rand_prob = rand_prob(),  ## p_t
-                                        avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
-                                        typeIerror = input$sig_level,
-                                        sample_size = input$sample_size)
+        # 
+        # calculate_mrt_bin_power_wrapper(p10 = p10(),
+        #                                 pT0 = pT0(),
+        #                                 p11 = p11(),
+        #                                 pT1 = pT1(),
+        #                                 total_T = total_decision_points(),
+        #                                 alpha_shape = input$alpha_choices,
+        #                                 beta_shape = input$beta_choices,
+        #                                 rand_prob = rand_prob(),  ## p_t
+        #                                 avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
+        #                                 typeIerror = input$sig_level,
+        #                                 sample_size = input$sample_size)
+        calculate_mrt_bin_power_f(avail_pattern = avail_input(),
+                                  f_t = f_t(),
+                                  g_t = g_t(),
+                                  beta = b_mat(),
+                                  alpha = a_mat(),
+                                  p_t = rand_prob(),
+                                  gamma = input$sig_level,
+                                  n = input$sample_size)
     })
     
     output$power <- renderUI({
@@ -738,16 +862,16 @@ shinyServer(function(input,output,session){
         sample_size_history$alpha_shape <- c(sample_size_history$alpha_shape, 
                                              input$alpha_choices)
         
-        sample_size_history$p10 <- c(sample_size_history$p10, p10())
+        #sample_size_history$p10 <- c(sample_size_history$p10, p10())
         
-        sample_size_history$pT0 <- c(sample_size_history$pT0, pT0())
+        #sample_size_history$pT0 <- c(sample_size_history$pT0, pT0())
         
         sample_size_history$beta_shape <- c(sample_size_history$beta_shape, 
                                             input$beta_choices)
         
-        sample_size_history$p11 <- c(sample_size_history$p11, p11())
+        #sample_size_history$p11 <- c(sample_size_history$p11, p11())
         
-        sample_size_history$pT1 <- c(sample_size_history$pT1, pT1())
+        #sample_size_history$pT1 <- c(sample_size_history$pT1, pT1())
         
         sample_size_history$sample_size <- c(sample_size_history$sample_size, 
                                              sample_size())
@@ -772,10 +896,10 @@ shinyServer(function(input,output,session){
                    "Total Dec Pts" = sample_size_history$tot_dec_pts,
                    "Succ Prob No Trt Shape" = sample_size_history$alpha_shape,
                    "Trt Eff Shape" = sample_size_history$beta_shape,
-                   "p10" = sample_size_history$p10,
-                   "pT0" = sample_size_history$pT0,
-                   "p11" = sample_size_history$p11,
-                   "pT1" = sample_size_history$pT1,
+                   #"p10" = sample_size_history$p10,
+                   #"pT0" = sample_size_history$pT0,
+                   #"p11" = sample_size_history$p11,
+                   #"pT1" = sample_size_history$pT1,
                    "Avail Pattern" = sample_size_history$avail_pattern,
                    "Avail Init" = sample_size_history$avail_init,
                    "Avail Final" = sample_size_history$avail_final)})
@@ -831,17 +955,24 @@ shinyServer(function(input,output,session){
 
         
         
-        power_vs_n_plot_wrapper(p10 = p10(),
-                                pT0 = pT0(),
-                                p11 = p11(),
-                                pT1 = pT1(),
-                                total_T = total_decision_points(),
-                                alpha_shape = input$alpha_choices,
-                                beta_shape = input$beta_choices,
-                                rand_prob = rand_prob(),  ## p_t
-                                avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
-                                typeIerror = input$sig_level)  
+        # power_vs_n_plot_wrapper(p10 = p10(),
+        #                         pT0 = pT0(),
+        #                         p11 = p11(),
+        #                         pT1 = pT1(),
+        #                         total_T = total_decision_points(),
+        #                         alpha_shape = input$alpha_choices,
+        #                         beta_shape = input$beta_choices,
+        #                         rand_prob = rand_prob(),  ## p_t
+        #                         avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
+        #                         typeIerror = input$sig_level)
         
+        power_vs_n_plot(avail_pattern = avail_input(),
+                                       f_t = f_t(),
+                                       g_t = g_t(),
+                                       beta = b_mat(),
+                                       alpha = a_mat(),
+                                       p_t = rand_prob(),
+                                       gamma = input$sig_level)
         
     })    
     
@@ -867,18 +998,24 @@ shinyServer(function(input,output,session){
         # }
         
         
-        power_vs_n_plot_wrapper(p10 = p10(),
-                                pT0 = pT0(),
-                                p11 = p11(),
-                                pT1 = pT1(),
-                                total_T = total_decision_points(),
-                                alpha_shape = input$alpha_choices,
-                                beta_shape = input$beta_choices,
-                                rand_prob = rand_prob(),  ## p_t
-                                avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
-                                typeIerror = input$sig_level)  
+        # power_vs_n_plot_wrapper(p10 = p10(),
+        #                         pT0 = pT0(),
+        #                         p11 = p11(),
+        #                         pT1 = pT1(),
+        #                         total_T = total_decision_points(),
+        #                         alpha_shape = input$alpha_choices,
+        #                         beta_shape = input$beta_choices,
+        #                         rand_prob = rand_prob(),  ## p_t
+        #                         avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
+        #                         typeIerror = input$sig_level)  
         
-        
+        power_vs_n_plot(avail_pattern = avail_input(),
+                        f_t = f_t(),
+                        g_t = g_t(),
+                        beta = b_mat(),
+                        alpha = a_mat(),
+                        p_t = rand_prob(),
+                        gamma = input$sig_level)
     })    
 
     output$power_vs_n <- renderPlot({
@@ -907,20 +1044,26 @@ shinyServer(function(input,output,session){
         #     rv$rp_shape <- "time-varying"
         # }
         
-        
-        psw_out <-power_summary_wrapper(p10 = p10(),
-                                        pT0 = pT0(),
-                                        p11 = p11(),
-                                        pT1 = pT1(),
-                                        total_T = total_decision_points(),
-                                        alpha_shape = input$alpha_choices,
-                                        beta_shape = input$beta_choices,
-                                        rand_prob = rand_prob(),  ## p_t
-                                        avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
-                                        typeIerror = input$sig_level)  
-       
-        return(psw_out)
-        
+        # 
+        # psw_out <-power_summary_wrapper(p10 = p10(),
+        #                                 pT0 = pT0(),
+        #                                 p11 = p11(),
+        #                                 pT1 = pT1(),
+        #                                 total_T = total_decision_points(),
+        #                                 alpha_shape = input$alpha_choices,
+        #                                 beta_shape = input$beta_choices,
+        #                                 rand_prob = rand_prob(),  ## p_t
+        #                                 avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
+        #                                 typeIerror = input$sig_level)  
+        # 
+        #return(psw_out)
+        power_summary(avail_pattern = avail_input(),
+                        f_t = f_t(),
+                        g_t = g_t(),
+                        beta = b_mat(),
+                        alpha = a_mat(),
+                        p_t = rand_prob(),
+                        gamma = input$sig_level)
     })  
     
     output$power_summary1 <- DT::renderDataTable({ pow_summary1() }) 
@@ -945,16 +1088,25 @@ shinyServer(function(input,output,session){
         # }
         # 
         
-        power_summary_wrapper(p10 = p10(),
-                              pT0 = pT0(),
-                              p11 = p11(),
-                              pT1 = pT1(),
-                              total_T = total_decision_points(),
-                              alpha_shape = input$alpha_choices,
-                              beta_shape = input$beta_choices,
-                              rand_prob = rand_prob(),  ## p_t
-                              avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
-                              typeIerror = input$sig_level)  
+        # power_summary_wrapper(p10 = p10(),
+        #                       pT0 = pT0(),
+        #                       p11 = p11(),
+        #                       pT1 = pT1(),
+        #                       total_T = total_decision_points(),
+        #                       alpha_shape = input$alpha_choices,
+        #                       beta_shape = input$beta_choices,
+        #                       rand_prob = rand_prob(),  ## p_t
+        #                       avail_pattern = avail_input(), ## E[I_t]  # TQ: will assume this is vector of length T
+        #                       typeIerror = input$sig_level)  
+        
+        
+        power_summary(avail_pattern = avail_input(),
+                      f_t = f_t(),
+                      g_t = g_t(),
+                      beta = b_mat(),
+                      alpha = a_mat(),
+                      p_t = rand_prob(),
+                      gamma = input$sig_level) 
         
         
     })  
@@ -987,12 +1139,12 @@ shinyServer(function(input,output,session){
                                        avail_input()[total_decision_points()])
         power_history$alpha_shape <- c(power_history$alpha_shape, 
                                        input$alpha_choices)
-        power_history$p10 <- c(power_history$p10, p10())
-        power_history$pT0 <- c(power_history$pT0, pT0())
+        #power_history$p10 <- c(power_history$p10, p10())
+        #power_history$pT0 <- c(power_history$pT0, pT0())
         power_history$beta_shape <- c(power_history$beta_shape, 
                                       input$beta_choices)
-        power_history$p11 <- c(power_history$p11, p11())
-        power_history$pT1 <- c(power_history$pT1, pT1())
+        #power_history$p11 <- c(power_history$p11, p11())
+        #power_history$pT1 <- c(power_history$pT1, pT1())
         power_history$sample_size <- c(power_history$sample_size, 
                                        input$sample_size)
         power_history$power <- c(power_history$power, power())
@@ -1013,10 +1165,10 @@ shinyServer(function(input,output,session){
                    "Succ Prob No Trt Shape" = power_history$alpha_shape,
                    "Trt Eff Shape" = power_history$beta_shape,
                    "Total Dec Pts" = power_history$total_dec_pts,
-                   "p10" = power_history$p10,
-                   "pT0" = power_history$pT0,
-                   "p11" = power_history$p11,
-                   "pT1" = power_history$pT1,
+                  # "p10" = power_history$p10,
+                  # "pT0" = power_history$pT0,
+                  # "p11" = power_history$p11,
+                  # "pT1" = power_history$pT1,
                    "Avail Pattern" = power_history$avail_pattern,
                    "Avail Init" = power_history$avail_init,
                    "Avail Final" = power_history$avail_final)
