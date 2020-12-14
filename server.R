@@ -190,18 +190,22 @@ shinyServer(function(input,output,session){
         } else if (input$alpha_choices == "logquadratic"){
            validate(
                 need(input$alpha_logquad_initial > 0, 
-                     "Error: Please specify the initial value of baseline success probability greater than 0"),
+                     "Error: Please specify the initial value of baseline 
+                      success probability greater than 0"),
                 need(input$alpha_logquad_change_val > 0, 
-                     "Error: Please specify the final value of baseline success probability greater than 0"),
+                     "Error: Please specify the final value of baseline 
+                      success probability greater than 0"),
                 need(input$alpha_logquad_change_pt > 0, 
-                     "Error: Please specify the final value of baseline success probability greater than 0")
+                     "Error: Please specify the final value of baseline 
+                      success probability greater than 0")
             )
             
             k1 <- log(input$alpha_logquad_initial)
             k2 <- input$alpha_logquad_change_pt
             k3 <- log(input$alpha_logquad_change_val)
             
-            validate(need(k2 != 0, "Error: Change point cannot be starting point"))
+            validate(need(k2 != 0, 
+                          "Error: Change point cannot be starting point"))
             
             a2 <- (2 * k1 * k2 - 2 * k3 * k2) / (2 * k2 * (1 - k2/2) - 1)
             a1 <- k1 - k3 - (1 - k2/2) * a2
@@ -222,11 +226,14 @@ shinyServer(function(input,output,session){
             if (input$alpha_choices == "constant") {
                 
                 t_mat <- as.matrix(rep(1, times = total_decision_points()))
+                
                 return(t_mat)
             } else if (input$alpha_choices == "loglinear"){
                 
-                t_mat <- as.matrix(cbind(rep(1, times = total_decision_points()),
-                               1:total_decision_points()))
+                t_mat <- as.matrix(
+                            cbind(
+                              rep(1, times = total_decision_points()),
+                              1:total_decision_points()))
                 return(t_mat)
             
             } else if (input$alpha_choices == "logquadratic"){
@@ -246,7 +253,7 @@ shinyServer(function(input,output,session){
     })
     
     alpha_input <- reactive({
-        if(!is.null(a_mat()) && !is.null(g_t())) {
+        if(!is.null(a_mat()) & !is.null(g_t())) {
             return(exp(g_t() %*% a_mat()))
         } else {
             return(.5)
@@ -257,13 +264,16 @@ shinyServer(function(input,output,session){
     
     output$alpha_graph <- renderPlot({
       if (!is.null(alpha_input())){
-        validate(need(max(alpha_input()) < 1 && min(alpha_input()) > 0,
+        validate(need(max(alpha_input()) < 1 & min(alpha_input()) > 0,
                     "Invalid probabilities. Must be between 0 and 1."))   
      
         ## ggplot in the works
         y1 = alpha_input()
         x1 = seq(1:length(alpha_input()) )
         df_alpha <- data.frame(x1, y1)
+        
+        df_alpha<- data.frame(apply(df_alpha, 2, unclass))
+        
         ggplot(df_alpha)+
         geom_line(aes( y = alpha_input(), 
                      x = seq(1:length(alpha_input()))), size = 1, 
@@ -287,8 +297,9 @@ shinyServer(function(input,output,session){
                 return(t_mat)
             } else if (input$beta_choices == "loglinear"){
                 
-                t_mat <- as.matrix(cbind(rep(1, times = total_decision_points()),
-                               1:total_decision_points()))
+                t_mat <- as.matrix(
+                            cbind(rep(1, times = total_decision_points()),
+                                  1:total_decision_points()))
                 return(t_mat)
                 
             } else if (input$beta_choices == "logquadratic"){
@@ -308,14 +319,15 @@ shinyServer(function(input,output,session){
     # beta vector
     b_mat <- reactive({
         if (!is.null(alpha_input())){
-        # Initialize some value to avoid some internal error when running locally
+        # Initialize a value to avoid some internal error when running locally
         # This part should have no effect on the UI.
         result <- 1
         if (input$beta_choices == "constant") {
             
             validate(
                 need(input$beta_constant_mean > 0, 
-                     "Error: Please specify the proximal treatment effect greater than 0")
+                     "Error: Please specify the proximal treatment effect 
+                      greater than 0")
             )
             
             
@@ -324,9 +336,11 @@ shinyServer(function(input,output,session){
         } else if (input$beta_choices == "loglinear") {
             validate(
                 need(input$beta_loglinear_initial > 0, 
-                     "Error: Please specify the initial value of proximal treatment effect greater than 0"),
+                     "Error: Please specify the initial value of proximal 
+                      treatment effect greater than 0"),
                 need(input$beta_loglinear_final > 0, 
-                     "Error: Please specify the final value of proximal treatment effect greater than 0")
+                     "Error: Please specify the final value of proximal 
+                      treatment effect greater than 0")
             )
             
             initial_log <- log(input$beta_loglinear_initial)
@@ -343,11 +357,14 @@ shinyServer(function(input,output,session){
             
             validate(
                 need(input$beta_logquad_initial > 0, 
-                     "Error: Please specify the initial value of baseline success probability greater than 0"),
+                     "Error: Please specify the initial value of baseline 
+                      success probability greater than 0"),
                 need(input$beta_logquad_change_val > 0, 
-                     "Error: Please specify the final value of baseline success probability greater than 0"),
+                     "Error: Please specify the final value of baseline 
+                      success probability greater than 0"),
                 need(input$beta_logquad_change_pt > 0, 
-                     "Error: Please specify the final value of baseline success probability greater than 0")
+                     "Error: Please specify the final value of baseline 
+                      success probability greater than 0")
             )
             
             
@@ -355,7 +372,8 @@ shinyServer(function(input,output,session){
             k2 <- input$beta_logquad_change_pt
             k3 <- log(input$beta_logquad_change_val)
             
-            validate(need(k2 != 0, "Error: Change point cannot be starting point"))
+            validate(need(k2 != 0, 
+                          "Error: Change point cannot be starting point"))
             
             b2 <- (2 * k1 * k2 - 2 * k3 * k2) / (2 * k2 * (1 - k2/2) - 1)
             b1 <- k1 - k3 - (1 - k2/2) * b2
@@ -380,40 +398,49 @@ shinyServer(function(input,output,session){
     
     ### plot of the graphs for the proximal treatment effect ###
     beta_input <- reactive({
-        if(!is.null(b_mat()) && !is.null(f_t())){
+        if(!is.null(b_mat()) & !is.null(f_t())){
             return(exp(f_t() %*% b_mat()))
         }
     })
     
     output$beta_graph <- renderPlot({
-      if(!is.null(alpha_input()) && !is.null(beta_input())){
-        
-        
-          validate(need(max(alpha_input()) < 1 && min(alpha_input()) > 0,
+    
+      if(!is.null(alpha_input()) & !is.null(beta_input())){
+        ab_product <- alpha_input() * beta_input()  
+          
+        validate(need(max(alpha_input()) < 1 & min(alpha_input()) > 0,
                         "Invalid probabilities. Must be between 0 and 1."))  
+          
+        validate(need(max(ab_product) < 1 & min(ab_product) > 0,
+                        "Invalid probabilities. Must be between 0 and 1."))  
+          
+       
         
         validate(need(max(beta_input()*alpha_input()) < 1 && min(beta_input()*alpha_input()) > 0,
                       "Invalid probabilities. Must be between 0 and 1."))  
       
         
+
+
         y1 = alpha_input()
         y2 = beta_input()*alpha_input()
         x2 = seq(1:length(alpha_input()) )
         df_beta <- data.frame(x2, y2,y1)
+        df_beta <- data.frame(apply(df_beta, 2, unclass))
         
         ggplot(df_beta)+
-          geom_line(aes( y = y1, 
+          geom_line(aes( y = y2, 
                          x = x2), size = 1, 
-                    color = "deepskyblue3", group=1)+
+                    color = "deepskyblue3",group=1)+
           ggtitle("Null Vs. Alternative Hypothesis ") +
+                   
           xlab("Decision Point") + ylab("Success Probability")+
           ylim(0,1)+
-          geom_point(aes(y= y2, x = x2), size = 1, 
+          geom_point(aes(y= y1, x = x2), size = 1, 
                          color = "red3")+ 
           theme(axis.text = element_text(size=12),
                 axis.title = element_text(size=14))
- 
-        
+
       }
       
         # if(!is.null(alpha_input()) && !is.null(beta_input())){
@@ -463,7 +490,8 @@ shinyServer(function(input,output,session){
             
             validate(
                 need(input$avail_constant_mean > 0, 
-                     "Error: Please specify the average availability greater than 0")
+                     "Error: Please specify the average availability greater 
+                      than 0")
             )
             
             result <- rep(input$avail_constant_mean, total_decision_points())
@@ -474,9 +502,11 @@ shinyServer(function(input,output,session){
             
             validate(
                 need(input$avail_linear_initial > 0, 
-                     "Error: Please specify the initial value of expected availability greater than 0"),
+                     "Error: Please specify the initial value of expected 
+                      availability greater than 0"),
                 need(input$avail_linear_final > 0, 
-                     "Error: Please specify the final value of expected availability greater than 0")
+                     "Error: Please specify the final value of expected 
+                      availability greater than 0")
             )
             
             result <- seq(from = input$avail_linear_initial, 
@@ -504,7 +534,8 @@ shinyServer(function(input,output,session){
 
             validate(need(!is.null(ea_inter_dec()), "Error: No file uploaded"),
                      need("Expected.Availability" %in% colnames(ea_inter_dec()), 
-                          "Error: No column of expected availability. See template")) 
+                          "Error: No column of expected availability. 
+                          See template")) 
             result <- ea_inter_dec()$Expected.Availability
 
             validate(need(length(result)==total_decision_points()),
@@ -516,9 +547,11 @@ shinyServer(function(input,output,session){
         
         validate(
             need(min(result) > 0,
-                 "Warning: Some values of expected availability are less than or equal to 0"),
+                 "Warning: Some values of expected availability are less than 
+                  or equal to 0"),
             need(max(result) <= 1,
-                 "Warning: Some values of expected availability are greater than 1")
+                 "Warning: Some values of expected availability are greater 
+                  than 1")
         )
         result
     })
@@ -527,6 +560,7 @@ shinyServer(function(input,output,session){
     
     ### Plot the graph for expected availability ###
     output$avail_graph <- renderPlot({
+
         validate(need(!(is.null(avail_input())), "Error: No availability input"))
       
       y3 <- avail_input()
@@ -534,6 +568,8 @@ shinyServer(function(input,output,session){
       m <- c(rep(mean(avail_input()), length(x3)))
       
       df_avail <- data.frame(y3, x3, m)
+      df_avail<- data.frame(apply(df_avail, 2, unclass))
+      
        ggplot(df_avail)+
         geom_line(aes( y =y3, 
                        x = x3),
@@ -547,8 +583,25 @@ shinyServer(function(input,output,session){
         theme(axis.text = element_text(size=12),
               axis.title = element_text(size=14))
       
-        
     })
+
+       
+        
+    #     plot(avail_input(), 
+    #          xlab = "Decision Point", 
+    #          ylab = "Expected Availability", 
+    #          ylim = c(0, 1), 
+    #          type = "o",
+    #          pch = 16,
+    #          cex = 0.8, 
+    #          col = 4)
+    #     abline(h = mean(avail_input()), lty = 2)
+    #     legend("topleft", 
+    #            legend=c('Availability','Average Availability'), 
+    #            col = c(4,1),
+    #            lty = c(1,2), 
+    #            pch=c(16,NA),bty = "n")
+    # 
         
     #     plot( avail_input(),
     #          xlab = "Decision Point", 
@@ -565,7 +618,7 @@ shinyServer(function(input,output,session){
     #            lty = c(1,2), 
     #            pch=c(16,NA),bty = "n")
     # 
-    # 
+    # })
     
 
     
@@ -606,16 +659,19 @@ shinyServer(function(input,output,session){
     
   
     
-    #### Output the first five rows of the table reading from the file with respect to days
-    #### and output warnings if the format of the file is not correct
-    #### Output the first five rows of the table reading from the file for days
+    # Output first 5 rows of the table reading from file with respect to days
+    # and output warnings if the format of the file is not correct
+    # Output the first five rows of the table reading from the file for days
     output$ea_inter_table_days <- renderDataTable({      
         delta <- as.vector(ea_inter_days()$Expected.Availability)
         validate(
             need(!is.null(input$file0), "Warning: No file is uploaded"),
-            need(is.null(input$file0) || "Expected.Availability" %in% colnames(ea_inter_days()),
-                 "Error: need a column titled 'Expected Availability'; see template"),
-            need(is.null(input$file0) || length(delta) == input$days , 
+            need(is.null(input$file0) || 
+                     "Expected.Availability" %in% colnames(ea_inter_days()),
+                 "Error: need a column titled 'Expected Availability';
+                  see template"),
+            need(is.null(input$file0) ||
+                     length(delta) == input$days , 
                  "Error: the number of days doesn't match."),
             need(is.null(input$file0) || max(delta) <= 1, 
                  "Error: some value of expected availability is bigger than 1"),
@@ -629,9 +685,12 @@ shinyServer(function(input,output,session){
         delta <- as.vector(ea_inter_dec()$Expected.Availability)
         validate(
             need(!is.null(input$file0a), "Warning: No file is uploaded"),
-            need(is.null(input$file0a) || "Expected.Availability" %in% colnames(ea_inter_dec()),
-                 "Error: need a column titled 'Expected Availability'; see template"),
-            need(is.null(input$file0a) || length(delta) == input$days * input$occ_per_day, 
+            need(is.null(input$file0a) || 
+                     "Expected.Availability" %in% colnames(ea_inter_dec()),
+                 "Error: need a column titled 'Expected Availability'; 
+                  see template"),
+            need(is.null(input$file0a) || 
+                     length(delta) == input$days * input$occ_per_day, 
                  "Error: the number of decision times doesn't match."),
             need(is.null(input$file0a) || max(delta) <= 1, 
                  "Error: some value of expected availability is bigger than 1"),
@@ -727,25 +786,34 @@ shinyServer(function(input,output,session){
     
     output$sample_size <- renderUI({
         validate(
-            need(!is.na(sample_size()), 
-                 "There was an error in the computation of the sample size. 
-                 Most likely this comes from the choice of null curve and proximal treatment effect.
-                 Check inputs and try again. See mrtbincalc documentation for further details."))
+            need(
+              !is.na(sample_size() & !is.null(sample_size())),
+              paste0(
+              "There was an error in the computation of the sample size.", 
+               " Most likely this comes from choice of null curve and ",
+               "proximal treatment effect. ",
+               " Check inputs and try again. 
+               See mrtbincalc documentation for further details.")))
 
         
         if (sample_size() > 10) {
-            HTML(paste("<h4 style = 'color:blue';> The required sample size is ",
-                       sample_size(), 
-                       "to attain", 
-                       input$power*100,
-                       "% power when the significance level is",input$sig_level,".")) 
+            HTML(
+              paste("<h4 style = 'color:blue';> The required sample size is ",
+                    sample_size(), 
+                    "to attain", 
+                    input$power*100,
+                    "% power when the significance level is",
+                    input$sig_level,".")) 
         } else {
-            ### if the calculated sample size is less than 10, we won't output the exact sample size ###
-            HTML(paste("<h4 style = 'color:blue';> The required sample size is less than or equal to 10 to attain", 
-                       input$power*100,
-                       "% power when the significance level is",
-                       input$sig_level,
-                       ". Please refer to the result section in the left column for suggestions.")) 
+            # if calculated sample size <=10, don't output sample size
+            HTML(
+              paste("<h4 style = 'color:blue';> The required sample size is 
+                     less than or equal to 10 to attain", 
+                    input$power*100,
+                    "% power when the significance level is",
+                    input$sig_level,
+                    ". Please refer to the result section in the left column 
+                     for suggestions.")) 
         }
         
     })
@@ -793,7 +861,7 @@ shinyServer(function(input,output,session){
     
     output$power <- renderUI({
         validate(
-            need(!is.na(power()) && !is.null(power()), 
+            need(!is.na(power()) & !is.null(power()), 
                  "There was an error in the computation of the sample size. 
                  Most likely this comes from the choice of null curve and proximal treatment effect.
                  Check inputs and try again. See mrtbincalc documentation for further details."))
@@ -824,7 +892,7 @@ shinyServer(function(input,output,session){
     
     observeEvent(input$button_calculate_sample_size, {
         # only update if valid sample size
-        validate(need(!is.null(sample_size()) && !is.na(sample_size()), FALSE))
+        validate(need(!is.null(sample_size()) & !is.na(sample_size()), FALSE))
         
         sample_size_history$avail_pattern <- c(sample_size_history$avail_pattern, 
                                                input$avail_choices)
@@ -959,7 +1027,7 @@ shinyServer(function(input,output,session){
     })
 
     # this is displayed on the power setting
-    pow_vs_n_plot2 <- eventReactive(input$button_calculate_sample_size, {
+    pow_vs_n_plot2 <- eventReactive(input$button_calculate_power, {
         rv$ss_clicked <- TRUE        
  
         out <- tryCatch(
@@ -996,7 +1064,7 @@ shinyServer(function(input,output,session){
     })    
     
     output$power_vs_n2 <- renderPlot({
-        validate(need(!is.na(pow_vs_n_plot2()) && !is.null(pow_vs_n_plot2()), 
+        validate(need(!is.na(pow_vs_n_plot2()) & !is.null(pow_vs_n_plot2()), 
                       FALSE))
         pow_vs_n_plot2()
     })
@@ -1042,7 +1110,7 @@ shinyServer(function(input,output,session){
     })  
     
     output$power_summary1 <- DT::renderDataTable({
-                                    validate(need(!is.na(pow_summary1() && !is.null(pow_summary1())),
+                                    validate(need(!is.na(pow_summary1() & !is.null(pow_summary1())),
                                                   FALSE))
                                     pow_summary1() 
                                 }) 
@@ -1091,7 +1159,7 @@ shinyServer(function(input,output,session){
     })  
     
     output$power_summary2 <- DT::renderDataTable({
-        validate(need(!is.null(pow_summary2()) && !is.na(pow_summary2()),
+        validate(need(!is.null(pow_summary2()) & !is.na(pow_summary2()),
                       FALSE))
         pow_summary2()
     }) 
@@ -1117,7 +1185,7 @@ shinyServer(function(input,output,session){
     observeEvent(input$button_calculate_power, {
         
         # only up date if valid power calculation was performed
-        validate(need(!is.null(power()) && !is.na(power()), FALSE))
+        validate(need(!is.null(power()) & !is.na(power()), FALSE))
         
         power_history$avail_pattern <- c(power_history$avail_pattern, 
                                          input$avail_choices)
