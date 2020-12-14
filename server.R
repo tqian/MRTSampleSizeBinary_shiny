@@ -55,10 +55,12 @@ shinyServer(function(input,output,session){
 
 # Randomization probability -----------------------------------------------
 
-    #### Output the first five rows of the table reading from the file with respect to decision times 
-    ### and output warnings if the format of the file is not correct
+    # Output first 5 rows of table reading from file wrt decision times 
+    # and output warnings if the format of the file is not correct
     output$P_inter_table_dec <- renderDataTable({      
+        
         delta <- as.vector(P_inter_dec()$Randomization.Probability)
+        
         validate(
             need(!is.null(input$file2), "Warning: No file is uploaded"),
             
@@ -75,7 +77,11 @@ shinyServer(function(input,output,session){
                         " is less than 0"))
         )
         
-        head(P_inter_dec(), n = 5)
+        datatable(P_inter_dec(), 
+                  options = list(pageLength = 5),
+                  colnames = c("Decision Time Point" = 1,
+                               "Randomization Probability" = 2),
+                  rownames = FALSE)
     })
     
     ### Reading the file with respect to days ###
@@ -112,7 +118,11 @@ shinyServer(function(input,output,session){
                         " is less than 0"))
         )
         
-        head(P_inter_days(), n = 5)
+        datatable(P_inter_days(), 
+                  options = list(pageLength = 5), 
+                  colnames = c("Day" = 1,
+                               "Randomization Probability" = 2),
+                  rownames = FALSE)
     })
     
     
@@ -137,7 +147,7 @@ shinyServer(function(input,output,session){
             rv$rp_shape <- "time-varying"
             
         }
-        print(rand_prob)
+
         
         rand_prob
     })
@@ -145,7 +155,7 @@ shinyServer(function(input,output,session){
     #### Templates for csv for randomization probability
     
     days_df <- reactive({
-        col_names <- c("Days", "Randomization Probability")
+        col_names <- c("Day", "Randomization Probability")
         temp_df <- data.frame(cbind(1:input$days, rep(0.4, input$days)))
         colnames(temp_df) <- col_names
         temp_df
@@ -162,7 +172,7 @@ shinyServer(function(input,output,session){
     )
     
     dec_pts_df <- reactive({
-        col_names <- c("Dec Times", "Randomization Probability")
+        col_names <- c("Dec Time", "Randomization Probability")
         dec_pts <- ceiling(input$days * input$occ_per_day)
         temp_df <- data.frame(cbind(1:dec_pts, rep(0.4, dec_pts)))
         colnames(temp_df) <- col_names
@@ -547,8 +557,8 @@ shinyServer(function(input,output,session){
 # Expected availability ---------------------------------------------------
     
     avail_input <- reactive({
-        result <- 0.5
-
+        
+        
         if (input$avail_choices == "constant") {
             
             validate(
@@ -561,6 +571,18 @@ shinyServer(function(input,output,session){
             
             rv$ea_shape <- "constant"
             rv$ea_set <- TRUE
+            
+            validate(
+                need(min(result) > 0,
+                    paste0("Warning: Some values of expected availability are", 
+                        " less than or equal to 0")),
+                need(max(result) <= 1,
+                    paste0("Warning: Some values of expected availability are", 
+                        " greater than 1"))
+            )
+            
+            
+            return(result)
             
         } else if (input$avail_choices == "linear") {
             
@@ -580,6 +602,17 @@ shinyServer(function(input,output,session){
             rv$ea_shape <- "linear"
             rv$ea_set <- TRUE
             
+            validate(
+                need(min(result) > 0,
+                    paste0("Warning: Some values of expected availability are", 
+                        " less than or equal to 0")),
+                need(max(result) <= 1,
+                    paste0("Warning: Some values of expected availability are", 
+                        " greater than 1"))
+            )
+            
+            return(result)
+            
         } else if (input$avail_choices == "tv_days") {
 
             validate(need(!is.null(ea_inter_days()),
@@ -592,6 +625,17 @@ shinyServer(function(input,output,session){
             
             rv$ea_shape <- "time-varying"
             rv$ea_set <- TRUE
+            
+            validate(
+                need(min(result) > 0,
+                    paste0("Warning: Some values of expected availability are", 
+                        " less than or equal to 0")),
+                need(max(result) <= 1,
+                    paste0("Warning: Some values of expected availability are", 
+                        " greater than 1"))
+            )
+            
+            return(result)
             
         } else if (input$avail_choices == "tv_dec_pts") {
 
@@ -607,18 +651,21 @@ shinyServer(function(input,output,session){
             
             rv$ea_shape <- "time-varying"
             rv$ea_set <- TRUE
+            
+            validate(
+                need(min(result) > 0,
+                    paste0("Warning: Some values of expected availability are", 
+                        " less than or equal to 0")),
+                need(max(result) <= 1,
+                    paste0("Warning: Some values of expected availability are", 
+                        " greater than 1"))
+            )
+            
+            return(result)
         }
         
-        validate(
-            need(min(result) > 0,
-                 paste0("Warning: Some values of expected availability are", 
-                        " less than or equal to 0")),
-            need(max(result) <= 1,
-                 paste0("Warning: Some values of expected availability are", 
-                        " greater than 1"))
-        )
         
-        result
+        
     })
     
     
@@ -626,7 +673,7 @@ shinyServer(function(input,output,session){
     ### Plot the graph for expected availability ###
     output$avail_graph <- renderPlot({
 
-        validate(need(!(is.null(avail_input())), "Error: No availability input"))
+      validate(need(!(is.null(avail_input())), "Error: No availability input"))
       
       y3 <- avail_input()
       x3 <- seq(1:length(avail_input()) )
@@ -728,27 +775,40 @@ shinyServer(function(input,output,session){
     # Output first 5 rows of the table reading from file with respect to days
     # and output warnings if the format of the file is not correct
     # Output the first five rows of the table reading from the file for days
-    output$ea_inter_table_days <- renderDataTable({      
+    output$ea_inter_table_days <- DT::renderDataTable({      
         delta <- as.vector(ea_inter_days()$Expected.Availability)
+        
         validate(
             need(!is.null(input$file0), "Warning: No file is uploaded"),
+            
             need(is.null(input$file0) || 
                      "Expected.Availability" %in% colnames(ea_inter_days()),
                  "Error: need a column titled 'Expected Availability';
                   see template"),
+            
             need(is.null(input$file0) ||
                      length(delta) == input$days , 
                  "Error: the number of days doesn't match."),
+            
             need(is.null(input$file0) || max(delta) <= 1, 
                  "Error: some value of expected availability is bigger than 1"),
+            
             need(is.null(input$file0) || min(delta) >= 0, 
                  "Error: some value of expected availability is less than 0")
         )
-        head(ea_inter_days(), n = 5)
+        
+        datatable(ea_inter_days(), 
+                  options = list(pageLength = 5),
+                  colnames = c("Day", "Expected Availability"),
+                  rownames = FALSE)
+
+        
+
     })
     
     output$ea_inter_table_dec <- renderDataTable({    
         delta <- as.vector(ea_inter_dec()$Expected.Availability)
+        
         validate(
             need(!is.null(input$file0a), "Warning: No file is uploaded"),
             
@@ -768,12 +828,16 @@ shinyServer(function(input,output,session){
                  "Error: some value of expected availability is less than 0")
         )
         
-        head(ea_inter_dec(), n = 5)
+        datatable(ea_inter_dec(), 
+                  options = list(pageLength = 5),
+                  colnames = c("Decision Time Point" = 1,
+                               "Expected Availability" = 2),
+                  rownames = FALSE)
     })
     
     ### expected availability templates for download
     ea_days_df <- reactive({
-        col_names <- c("Days", "Expected Availability")
+        col_names <- c("Day", "Expected Availability")
         temp_df <- data.frame(cbind(1:input$days, rep(0.7, input$days)))
         colnames(temp_df) <- col_names
         temp_df
@@ -791,7 +855,7 @@ shinyServer(function(input,output,session){
     
     
     ea_dec_pts_df <- reactive({
-        col_names <- c("Dec Times", "Expected Availability")
+        col_names <- c("Dec Time", "Expected Availability")
         dec_pts <- ceiling(input$days * input$occ_per_day)
         temp_df <- data.frame(cbind(1:dec_pts, rep(0.7, dec_pts)))
         colnames(temp_df) <- col_names
@@ -817,10 +881,11 @@ shinyServer(function(input,output,session){
 
 
     sample_size <- eventReactive(input$button_calculate_sample_size, {
-
         
+        # check all parameters are set before finding sample size
         validate(need(
-            rv$ea_set & !is.null(rand_prob()) & rv$null_set & rv$te_set,
+            !is.null(avail_input()) & !is.null(rand_prob()) &
+                rv$null_set & rv$te_set,
             "Provide values for all parameters first."
         ))
         
@@ -1061,7 +1126,20 @@ shinyServer(function(input,output,session){
                                         "Succ.Prob.No.Trt.Shape",
                                         "Trt.Eff.Shape",
                                         "Avail.Pattern")]
-        temp_tab %>% mutate_if(is.numeric, round, digits = 4)
+        
+        temp_tab %>% 
+            mutate_if(is.numeric, round, digits = 4) %>% 
+            datatable( 
+                  options = list(pageLength = 5),
+                  colnames = c("Sample Size",
+                               "Power",
+                               "Sig. Level",
+                               "Rand. Prob. Shape",
+                               "Total Dec. Pts",
+                               "Succ. Prob. No Trt Shape",
+                               "Trt Eff. Shape",
+                               "Avail. Pattern"),
+                  rownames = FALSE)
     })
     
 
@@ -1227,7 +1305,8 @@ shinyServer(function(input,output,session){
     output$power_summary1 <- renderDataTable({
         validate(need(!is.na(pow_summary1() & !is.null(pow_summary1())),
                       FALSE))
-        pow_summary1() 
+        
+        datatable(pow_summary1(), colnames=c("Power", "Sample Size")) 
     }) 
     
     # for when power is being calculated
@@ -1276,7 +1355,7 @@ shinyServer(function(input,output,session){
     output$power_summary2 <- renderDataTable({
         validate(need(!is.null(pow_summary2()) & !is.na(pow_summary2()),
                       FALSE))
-        pow_summary2()
+        datatable(pow_summary2(), colnames=c("Power", "Sample Size"))
     }) 
     
     
@@ -1378,7 +1457,18 @@ shinyServer(function(input,output,session){
                                       "Trt.Eff.Shape",
                                       "Avail.Pattern")]
         
-        pht %>% mutate_if(is.numeric, round, digits = 4)
+        pht %>% 
+            mutate_if(is.numeric, round, digits = 4) %>% 
+            datatable(options = list(pageLength = 5),
+                      colnames = c("Sample Size",
+                                   "Power",
+                                   "Sig. Level",
+                                   "Rand. Prob. Shape",
+                                   "Total Dec. Pts",
+                                   "Succ. Prob. No Trt Shape",
+                                   "Trt Eff. Shape",
+                                   "Avail. Pattern"),
+                      rownames = FALSE)
     })
     
     # download for power history table
