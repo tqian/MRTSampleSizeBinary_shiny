@@ -421,17 +421,16 @@ shinyServer(function(input,output,session){
         df_beta <- data.frame(x2, y2,y1)
         
         ggplot(df_beta)+
-          geom_line(aes( y = y1, 
+          geom_line(aes( y = y2, 
                          x = x2), size = 1, 
                     color = "deepskyblue3")+
-          ggtitle("Null Vs. Alternative Hypothesis ") +
+          ggtitle("Success Probability Null Curve") +
           xlab("Decision Point") + ylab("Success Probability")+
           ylim(0,1)+
-          geom_point(aes(y= y2, x = x2), size = 1, 
+          geom_point(aes(y= y1, x = x2), size = 1, 
                          color = "red3")+ 
           theme(axis.text = element_text(size=12),
-                axis.title = element_text(size=14))+
- 
+                axis.title = element_text(size=14))
         
 
         
