@@ -30,10 +30,12 @@ shinyServer(function(input,output,session){
                  "Error: Please specify the number of days greater than 0"),
             
             need(input$occ_per_day == round(input$occ_per_day),
-                 "Error: Please enter integer values for the number of decision points per day"),
+                 paste0("Error: Please enter integer values for the number of",
+                        " decision points per day")),
             
             need(input$occ_per_day > 0 ,
-                 "Error: Please specify the number of decision points per day greater than 0")
+                 paste0("Error: Please specify the number of decision points", 
+                        " per day greater than 0"))
         )
         
         ceiling(input$days * input$occ_per_day)
