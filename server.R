@@ -465,7 +465,8 @@ shinyServer(function(input,output,session){
           
        
         
-        validate(need(max(beta_input()*alpha_input()) < 1 && min(beta_input()*alpha_input()) > 0,
+        validate(need(max(beta_input()*alpha_input()) < 1 &
+                          min(beta_input()*alpha_input()) > 0,
                       "Invalid probabilities. Must be between 0 and 1."))  
       
         
@@ -648,7 +649,6 @@ shinyServer(function(input,output,session){
               axis.title = element_text(size=14))
       
     })
-<<<<<<< HEAD
 
        
         
@@ -688,9 +688,6 @@ shinyServer(function(input,output,session){
 
     
 
-=======
- 
->>>>>>> 1d5637029a19c90d23efdeacd15e0e09a5c6cae4
 
     
     ### Reading the file with respect to days for expected availability ###
@@ -826,6 +823,7 @@ shinyServer(function(input,output,session){
             rv$ea_set & !is.null(rand_prob()) & rv$null_set & rv$te_set,
             "Provide values for all parameters first."
         ))
+        
         rv$ss_clicked <- TRUE
            
            out <- tryCatch(
