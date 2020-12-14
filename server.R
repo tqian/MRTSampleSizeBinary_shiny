@@ -7,12 +7,11 @@ shinyServer(function(input,output,session){
     
     rv <- reactiveValues(data=NULL)
     
+    # flags for when to display download buttons
     rv$ss_clicked <- FALSE
-
     rv$power_clicked <- FALSE
     
     ### Calculate total number of decision points based on # Days and # Decision points per day
-    
     total_decision_points <- reactive({
         
         validate(
@@ -42,6 +41,9 @@ shinyServer(function(input,output,session){
         read.csv(inFile$datapath, header = TRUE, sep = ',')
     })
     
+
+# Randomization probability -----------------------------------------------
+
     #### Output the first five rows of the table reading from the file with respect to decision times 
     ### and output warnings if the format of the file is not correct
     output$P_inter_table_dec <- renderDataTable({      
@@ -92,7 +94,7 @@ shinyServer(function(input,output,session){
     })
     
     
-    # trying this outside
+    # vector of randomization probabilities
     rand_prob <- reactive({
     
         if (input$rand_prob_choices == "constant"){
@@ -110,7 +112,7 @@ shinyServer(function(input,output,session){
         rand_prob
     })
     
-    #### Templates for randomization probability #####
+    #### Templates for csv for randomization probability
     
     days_df <- reactive({
         col_names <- c("Days", "Randomization Probability")
@@ -151,8 +153,8 @@ shinyServer(function(input,output,session){
     )
     
     
-    #### Calculating baseline success probability ####
-    
+# Calculating null success curve ------------------------------------------
+    # alpha vector
     a_mat <- reactive({
         # Initialize some value to avoid some internal error when running locally
         # This part should have not effect on the UI.
@@ -162,8 +164,10 @@ shinyServer(function(input,output,session){
                 need(input$alpha_constant_mean > 0, 
                      "Error: Please specify the baseline success probability greater than 0")
             )
+
+
+
             
-            #result <- rep(input$alpha_constant_mean, total_decision_points())
             
             result <- matrix(log(input$alpha_constant_mean))
             
@@ -177,15 +181,12 @@ shinyServer(function(input,output,session){
             
             initial_log <- log(input$alpha_loglinear_initial)
             final_log <- log(input$alpha_loglinear_final)
-           # result_log <- seq(from = initial_log, 
-        #                      to = final_log, 
-          #                    length.out = total_decision_points())
+
             
             slope <- (final_log - initial_log) / total_decision_points() 
             
             result <- matrix(c(initial_log - slope, slope ), ncol=1)
-            
-            # result <- exp(result_log)
+
         } else if (input$alpha_choices == "logquadratic"){
            validate(
                 need(input$alpha_logquad_initial > 0, 
@@ -206,27 +207,18 @@ shinyServer(function(input,output,session){
             a1 <- k1 - k3 - (1 - k2/2) * a2
             a3 <- k1 - a1 - a2
             
-            #t_mat <- cbind(rep(1, times=total_decision_points()),
-             #              1:total_decision_points(),
-            #               (1:total_decision_points())^2)
+
             
             a_mat <- as.matrix(c(a1, a2, a3), ncol=1)
-            
-            #result <- exp(t_mat %*% a_mat) 
-            
+
             result <- a_mat
         }
-        # validate(
-        #     need(min(result) > 0,
-        #          "Warning: Some values of baseline success probability are less than or equal to 0"),
-        #     need(max(result) <= 1,
-        #          "Warning: Some values of baseline success probability are greater than 1")
-        # )
+
         result
     })
     
+    # gmatrix
     g_t <- reactive({
-      #  if(!is.null(a_mat())) {
             if (input$alpha_choices == "constant") {
                 
                 t_mat <- as.matrix(rep(1, times = total_decision_points()))
@@ -251,8 +243,6 @@ shinyServer(function(input,output,session){
                 return(t_mat)
             }
             
-            
-        #}
     })
     
     alpha_input <- reactive({
@@ -266,28 +256,31 @@ shinyServer(function(input,output,session){
     ### plot of the graphs for the baseline success probability ###
     
     output$alpha_graph <- renderPlot({
-      ## ggplot in the works
-      y1 = alpha_input()
-      x1 = seq(1:length(alpha_input()) )
-      df_alpha <- data.frame(x1, y1)
-      ggplot(df_alpha)+
-      geom_line(aes( y = alpha_input(), 
+      if (!is.null(alpha_input())){
+        validate(need(max(alpha_input()) < 1 && min(alpha_input()) > 0,
+                    "Invalid probabilities. Must be between 0 and 1."))   
+     
+        ## ggplot in the works
+        y1 = alpha_input()
+        x1 = seq(1:length(alpha_input()) )
+        df_alpha <- data.frame(x1, y1)
+        ggplot(df_alpha)+
+        geom_line(aes( y = alpha_input(), 
                      x = seq(1:length(alpha_input()))), size = 1, 
-                color = "deepskyblue3")+
+                color = "deepskyblue3", group=1)+
         ggtitle("Success Probability Null Curve") +
         xlab("Decision Point") + ylab("Baseline Success Probability")+
         ylim(0,1)+
         theme(axis.text = element_text(size=12),
               axis.title = element_text(size=14))
       
-      
+      }
     })
     
     
-    #### Calculating proximal treatment effect (relative risk) ####
-
+# Calculate proximal treatment effect -------------------------------------
+    # f matrix
     f_t <- reactive({
-        #if(!is.null(b_mat())) {
             if (input$beta_choices == "constant") {
                 
                 t_mat <- as.matrix(rep(1, times = total_decision_points()))
@@ -309,11 +302,10 @@ shinyServer(function(input,output,session){
             }
             
 
-       # }
     })
     
     
-    
+    # beta vector
     b_mat <- reactive({
         if (!is.null(alpha_input())){
         # Initialize some value to avoid some internal error when running locally
@@ -326,7 +318,6 @@ shinyServer(function(input,output,session){
                      "Error: Please specify the proximal treatment effect greater than 0")
             )
             
-            #result <- rep(input$beta_constant_mean, total_decision_points())
             
             result <- matrix(c(log(input$beta_constant_mean)), ncol=1)
         
@@ -343,7 +334,6 @@ shinyServer(function(input,output,session){
             result_log <- seq(from = initial_log, to = final_log, 
                               length.out = total_decision_points())
             
-            #result <- exp(result_log)
             
             slope <- (final_log - initial_log)/total_decision_points()
             
@@ -381,23 +371,19 @@ shinyServer(function(input,output,session){
             
             result <- b_mat
         }
-        # validate(
-        #     need(min(result * alpha_input()) > 0,
-        #          "Warning: Some values of success probability are less than or equal to 0"),
-        #     need(max(result * alpha_input()) <= 1,
-        #          "Warning: Some values of success probability are greater than 1")
-        # )
+
         result
         }
     })
     
+
+    
+    ### plot of the graphs for the proximal treatment effect ###
     beta_input <- reactive({
         if(!is.null(b_mat()) && !is.null(f_t())){
             return(exp(f_t() %*% b_mat()))
         }
     })
-    
-    ### plot of the graphs for the proximal treatment effect ###
     
     output$beta_graph <- renderPlot({
       if(!is.null(alpha_input()) && !is.null(beta_input())){
@@ -457,12 +443,10 @@ shinyServer(function(input,output,session){
     p11 <- reactive({NULL}) #reactive({alpha_input()[1] * beta_input()[1]})
     
     pT1 <- reactive({NULL}) #reactive({alpha_input()[total_decision_points()] * beta_input()[total_decision_points()]})
-    
-    #### Expected Availability ####
+
+# Expected availability ---------------------------------------------------
     
     avail_input <- reactive({
-        # Initialize some value to avoid some internal error when running locally
-        # This part should have not effect on the UI.
         result <- 0.5
 
         if (input$avail_choices == "constant") {
@@ -532,7 +516,6 @@ shinyServer(function(input,output,session){
     
     
     ### Plot the graph for expected availability ###
-    
     output$avail_graph <- renderPlot({
         validate(need(!(is.null(avail_input())), "Error: No availability input"))
         plot(avail_input(), 
@@ -554,12 +537,11 @@ shinyServer(function(input,output,session){
     
 
     
-    ##### Calculate Sample Size #####
+
 
     
-    
-    
     ### Reading the file with respect to days for expected availability ###
+    # time-varying days
     ea_inter_days <- reactive({     
         
         inFile <- input$file0
@@ -574,6 +556,7 @@ shinyServer(function(input,output,session){
     
     })
     
+    # time-varying decision points
     ea_inter_dec <- reactive({     
         
         inFile <- input$file0a
@@ -589,11 +572,10 @@ shinyServer(function(input,output,session){
         
     })
     
-
-    
+  
     
     #### Output the first five rows of the table reading from the file with respect to days
-    ### and output warnings if the format of the file is not correct
+    #### and output warnings if the format of the file is not correct
     #### Output the first five rows of the table reading from the file for days
     output$ea_inter_table_days <- renderDataTable({      
         delta <- as.vector(ea_inter_days()$Expected.Availability)
@@ -627,7 +609,7 @@ shinyServer(function(input,output,session){
         head(ea_inter_dec(), n = 5)
     })
     
-    ### expected availability templates ###
+    ### expected availability templates for download
     ea_days_df <- reactive({
         col_names <- c("Days", "Expected Availability")
         temp_df <- data.frame(cbind(1:input$days, rep(0.7, input$days)))
@@ -667,11 +649,11 @@ shinyServer(function(input,output,session){
         }
     )
     
+    
 
-    
-    
-    ##### Calculate Sample Size #####
-    
+# Calculate Sample Size ---------------------------------------------------
+
+
     sample_size <- eventReactive(input$button_calculate_sample_size, {
 
         rv$ss_clicked <- TRUE
@@ -694,14 +676,14 @@ shinyServer(function(input,output,session){
                error=function(cond) {
                    message("Here's the original error message:")
                    message(cond)
-                   # Choose a return value in case of error
+
                    return(NA)
                },
                warning=function(cond) {
                    message("Here's the original warning message:")
                    message(cond)
-                   # Choose a return value in case of warning
-                   return(NA)
+
+                   return(NULL)
                },
                finally={
                    message("Exit sample size computation")
@@ -712,8 +694,13 @@ shinyServer(function(input,output,session){
     })
     
     output$sample_size <- renderUI({
+        validate(
+            need(!is.na(sample_size()), 
+                 "There was an error in the computation of the sample size. 
+                 Most likely this comes from the choice of null curve and proximal treatment effect.
+                 Check inputs and try again. See mrtbincalc documentation for further details."))
+
         
-        validate(need(is.numeric(sample_size()), "Check inputs and try again"))
         if (sample_size() > 10) {
             HTML(paste("<h4 style = 'color:blue';> The required sample size is ",
                        sample_size(), 
@@ -728,10 +715,12 @@ shinyServer(function(input,output,session){
                        input$sig_level,
                        ". Please refer to the result section in the left column for suggestions.")) 
         }
+        
     })
     
     
-    ##### Calculate Power #####
+
+# Calculate Power ---------------------------------------------------------
     
     power <- eventReactive(input$button_calculate_power, {
         
@@ -760,7 +749,7 @@ shinyServer(function(input,output,session){
                 message("Here's the original warning message:")
                 message(cond)
                 # Choose a return value in case of warning
-                return(NA)
+                return(NULL)
             },
             finally={
                 message("Exit calculate power")
@@ -771,8 +760,13 @@ shinyServer(function(input,output,session){
     })
     
     output$power <- renderUI({
-        validate(need(!is.na(power()), 
-                      "Something went wrong. Check inputs and try again"))
+        validate(
+            need(!is.na(power()) && !is.null(power()), 
+                 "There was an error in the computation of the sample size. 
+                 Most likely this comes from the choice of null curve and proximal treatment effect.
+                 Check inputs and try again. See mrtbincalc documentation for further details."))
+        
+        
         if (power() >= 0.4) {
             HTML(paste("<h4 style = 'color:blue';> The power we get is ", 
                        round(power(), 3)*100,
@@ -790,12 +784,16 @@ shinyServer(function(input,output,session){
     })
     
     
-    ### Create history table for power calculation and sample size calculation
-    
-    
+
+
+# Sample size history table -----------------------------------------------
+
     sample_size_history <- reactiveValues(data=NULL)
     
     observeEvent(input$button_calculate_sample_size, {
+        # only update if valid sample size
+        validate(need(!is.null(sample_size()) && !is.na(sample_size()), FALSE))
+        
         sample_size_history$avail_pattern <- c(sample_size_history$avail_pattern, 
                                                input$avail_choices)
         
@@ -835,8 +833,9 @@ shinyServer(function(input,output,session){
                                              total_decision_points())
     })
 
-        samp_size_hist <- reactive({data.frame(
-            "Sample Size" = sample_size_history$sample_size,
+        samp_size_hist <- reactive({
+            data.frame(
+                   "Sample Size" = sample_size_history$sample_size,
                    "Power" = sample_size_history$power,
                    "Sig Level" = sample_size_history$sig_level,
                    "Rand Prob Shape" = sample_size_history$rand_prob_shape,
@@ -849,9 +848,8 @@ shinyServer(function(input,output,session){
                    #"pT1" = sample_size_history$pT1,
                    "Avail Pattern" = sample_size_history$avail_pattern,
                    "Avail Init" = sample_size_history$avail_init,
-                   "Avail Final" = sample_size_history$avail_final)})
-        #ssht
-    #})
+                   "Avail Final" = sample_size_history$avail_final)
+            })
    
 
     output$sample_size_history_table <- renderDataTable({
@@ -860,7 +858,7 @@ shinyServer(function(input,output,session){
     })
     
 
-    
+    # download button for sample size history table
     output$samp_size_dl <- downloadHandler(
         filename = function() {
             paste0("sample_size_history.csv")
@@ -875,24 +873,18 @@ shinyServer(function(input,output,session){
             downloadButton('samp_size_dl', 'Sample Size History')
         }
     })
-    
-
-    #output$sample_size_history_table <- renderDataTable({ss_hist_tab()})
 
     
-    
-    
-    
-    ###### Power vs Sample Size plot #####
+
+
+# Create power vs Sample Size plots ---------------------------------------
+
+    # this is displayed when on the sample size setting
     pow_vs_n_plot1 <- eventReactive(input$button_calculate_sample_size, {
-        # The determination of randomization probability is not well-implemented.
-        # Need to think more carefully, because there are three sources of rand. prob.
         
         rv$ss_clicked <- TRUE
 
-        
 
-        
         out <- tryCatch(
             {
                 
@@ -930,17 +922,14 @@ shinyServer(function(input,output,session){
     
     output$power_vs_n1 <- renderPlot({
         validate(need(!is.na(pow_vs_n_plot1()), 
-                      "Something went wrong. Check inputs and try again"))
+                      FALSE))
         pow_vs_n_plot1()
     })
 
+    # this is displayed on the power setting
     pow_vs_n_plot2 <- eventReactive(input$button_calculate_sample_size, {
-        # The determination of randomization probability is not well-implemented.
-        # Need to think more carefully, because there are three sources of rand. prob.
         rv$ss_clicked <- TRUE        
  
-        
-
         out <- tryCatch(
             {
                 
@@ -973,19 +962,16 @@ shinyServer(function(input,output,session){
         )    
         return(out)
     })    
-
-    output$power_vs_n <- renderPlot({
-        pow_vs_n_plot()
-    })    
-
     
     output$power_vs_n2 <- renderPlot({
-        validate(need(!is.na(pow_vs_n_plot2()), 
-                      "Something went wrong. Check inputs and try again."))
+        validate(need(!is.na(pow_vs_n_plot2()) && !is.null(pow_vs_n_plot2()), 
+                      FALSE))
         pow_vs_n_plot2()
     })
     
-    #### Power Summary ######
+
+# Power summary tables (beneath plot) -------------------------------------
+    # case for when sample size is being calculated
     pow_summary1 <- eventReactive(input$button_calculate_sample_size, {
 
         rv$power_clicked <- TRUE
@@ -1024,12 +1010,12 @@ shinyServer(function(input,output,session){
     })  
     
     output$power_summary1 <- DT::renderDataTable({
-                                    validate(need(!is.na(pow_summary1()),
-                                                  "Something went wrong. Check inputs and try again."))
+                                    validate(need(!is.na(pow_summary1() && !is.null(pow_summary1())),
+                                                  FALSE))
                                     pow_summary1() 
                                 }) 
     
-    
+    # for when power is being calculated
     pow_summary2 <- eventReactive(input$button_calculate_power, {
         # The determination of randomization probability is not well-implemented.
         # Need to think more carefully, because there are three sources of rand. prob.
@@ -1072,10 +1058,15 @@ shinyServer(function(input,output,session){
         
     })  
     
-    output$power_summary2 <- DT::renderDataTable({pow_summary2()}) 
+    output$power_summary2 <- DT::renderDataTable({
+        validate(need(!is.null(pow_summary2()) && !is.na(pow_summary2()),
+                      FALSE))
+        pow_summary2()
+    }) 
     
     
 
+# Power history table -----------------------------------------------------
     power_history <- reactiveValues(avail_pattern = c(), 
                                     avail_init = c(), 
                                     avail_final = c(),
@@ -1092,6 +1083,10 @@ shinyServer(function(input,output,session){
                                     total_dec_pts = c())
     
     observeEvent(input$button_calculate_power, {
+        
+        # only up date if valid power calculation was performed
+        validate(need(!is.null(power()) && !is.na(power()), FALSE))
+        
         power_history$avail_pattern <- c(power_history$avail_pattern, 
                                          input$avail_choices)
         power_history$avail_init <- c(power_history$avail_init, 
@@ -1138,8 +1133,11 @@ shinyServer(function(input,output,session){
         pht
     })
     
-    output$power_history_table <- renderDataTable({pow_history_table()})
+    output$power_history_table <- renderDataTable({
+        pow_history_table()
+    })
     
+    # download for power history table
     output$pow_dl <- downloadHandler(
         filename = function() {
             paste0("power_history.csv")
