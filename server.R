@@ -3,7 +3,6 @@ library(DT)
 library(ggplot2)
 library(dplyr)
 library(mrtbincalc)
-#source("sample_size_calc_bin_mrt.R")
 
 shinyServer(function(input,output,session){
     
