@@ -493,25 +493,28 @@ shinyServer(function(input,output,session){
         
         
         ggplot(data =df_beta)+
+          ggtitle("Success Probability Null and Alternative Curves") +
+          geom_line(mapping = aes(y= y2, 
+                                  x = x2, 
+                                  color = "Alternative Hypothesis"),
+                    size = 1)+
           geom_line(mapping = aes( y = y1, 
                                    x = x2, 
                                color = "Null Hypothesis"), 
                     size = 1)+
-          ggtitle("Null & Alt Success Probability Curves ") +
-          labs(x = "Decision Point",
-               y = "Success Probability")+
-          ylim(0,1)+
+
           geom_point(mapping = aes(y= y2, 
                                    x = x2, 
                               color = "Alternative Hypothesis"),
                      size = 1)+
-                        
       
         scale_color_manual(
           values = c("Null Hypothesis" = "deepskyblue3",
                 "Alternative Hypothesis" = "red3")) +
-          ggtitle("Success Probability Null and Alternative Curves") +
-         
+
+          labs(x = "Decision Point",
+               y = "Success Probability")+
+          ylim(0,1)+
           ylab("Success Probability") +
           xlab("Decision Point") +
           labs(color = "Legend") +
@@ -693,11 +696,7 @@ shinyServer(function(input,output,session){
        
        
        ggplot(data=df_avail) +
-           geom_point(mapping=aes(y     = m,
-                                  x     = x3,
-                                  color = "Average Availability"),
-                   size=1) +
-         
+
            geom_line(mapping=aes(y     = m,
                                  x     = x3,
                                  color = "Average Availability"),
@@ -708,6 +707,10 @@ shinyServer(function(input,output,session){
                                  color = "Availability"), 
                      size=1) +
            
+           geom_point(mapping=aes(y     = m,
+                                  x     = x3,
+                                  color = "Average Availability"),
+                     size=1) +           
            scale_color_manual(
                values = c("Average Availability" = "grey69",
                           "Availability"         = "deepskyblue3")) +
