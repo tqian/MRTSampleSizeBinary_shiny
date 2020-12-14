@@ -12,13 +12,19 @@ Before using the calculator the user should have knowledge of the following:
 1. **Study Setup**
 The number of decision time points/duration of study and the randomization
 probability, i.e. the probability of assigning the treatment at each decision
-time point.
+time point. Duration Study can be expressed in number of decision time points or
+number of days and decisions per day. User can choose a constant randomization
+probability or upload a .csv of time-varying randomization probabilities.
+Templates for the format of .csv to upload are provided and dynamically change
+with number of decision points/duration of study.
 
 1. **Availability** 
 Treatment can only be provided when an individual is available. The expected
 availability is the probability a person is available to receive the
 intervention at the decision times. User can select prespecified time-varying
-pattern (constant, linear) or upload a .csv file  for the expected availability.
+pattern (constant, linear) or upload a .csv file  for the expected availability. 
+Templates for the format of .csv to upload are provided and dynamically change 
+with number of decision points/duration of study.
 
 1. **Success Probability Null Curve** 
 The success probability null curve is defined as the probability of the proximal
