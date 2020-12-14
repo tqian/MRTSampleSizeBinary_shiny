@@ -488,7 +488,7 @@ shinyServer(function(input,output,session){
         x2 <- seq(1:length(alpha_input()))
         df_beta <- data.frame(x2, y2,y1)
         df_beta <- data.frame(apply(df_beta, 2, unclass))
-        legend_colors <-  c("Alt- Hypothesis" = "red", "Null Hypothesis" = "deepskyblue3")
+        legend_colors <-  c("Alt- Hypothesis" = "red3", "Null Hypothesis" = "deepskyblue3")
         ggplot(df_beta)+
           geom_line(aes( y = y1, 
                          x = x2), size = 1, 
@@ -506,7 +506,31 @@ shinyServer(function(input,output,session){
                                 labels=c("Null", "Alt"))
         
          
-
+        y3 <- avail_input()
+        x3 <- seq(1:length(avail_input()) )
+        m <- c(rep(mean(avail_input()), length(x3)))
+        
+        df_avail <- data.frame(y3, x3, m)
+        df_avail<- data.frame(apply(df_avail, 2, unclass))
+        
+        # ggplot(df_avail)+
+        #  geom_line(aes( y =y3, 
+        #                 x = x3),
+        #                 size = 1, 
+        #            color = "deepskyblue3")+
+        #  ggtitle("Average & Expected Availability") +
+        #  xlab("Decision Point") + ylab("Expected Availablility")+
+        #  ylim(0,1)+
+        #   geom_point(aes(y= m, x = x3), size = 1, 
+        #              color = "red")+
+        #  theme(
+        #      legend.position = 'top',
+        #      axis.text = element_text(size=12),
+        #      axis.title = element_text(size=14)) 
+        
+        
+        
+        
       }
     })
       
@@ -708,20 +732,29 @@ shinyServer(function(input,output,session){
        
        
        ggplot(data=df_avail) +
+           geom_point(mapping=aes(y     = m,
+                                  x     = x3,
+                                  color = "Average Availability"),
+                   size=1) +
+         
+           geom_line(mapping=aes(y     = m,
+                                 x     = x3,
+                                 color = "Average Availability"),
+                    size=1) +
+           
            geom_line(mapping=aes(y     = y3,
                                  x     = x3,
                                  color = "Availability"), 
-                     size=1 ) +
-           geom_line(mapping=aes(y     = m,
-                                 x     = x3,
-                                 color ="Average Availability"),size=1) +
+                     size=1) +
+           
            scale_color_manual(
-               values = c('Average Availability' = 'red',
-                          'Availability'         = 'deepskyblue3')) +
-           labs(color = "Legend") +
+               values = c("Average Availability" = "grey69",
+                          "Availability"         = "deepskyblue3")) +
+           
            ylim(0,1) + 
            ylab("Expected Availability") +
            xlab("Decision Point") +
+           labs(color = "Legend") +
            theme(legend.position = 'bottom')
        
        
@@ -1365,7 +1398,7 @@ shinyServer(function(input,output,session){
     output$power_summary1 <- renderDataTable({
         validate(need(!is.na(pow_summary1() & !is.null(pow_summary1())),
                       FALSE))
-        
+        print('post valid')
         datatable(pow_summary1(), colnames=c("Power", "Sample Size")) 
     }) 
     
