@@ -334,7 +334,7 @@ shinyServer(function(input,output,session){
         ylab("Baseline Success Probability")+
         ylim(0,1)+
         theme(axis.text = element_text(size=12),
-              axis.title = element_text(size=14))
+              axis.title = element_text(size=14)) 
         
           
       }
@@ -689,18 +689,44 @@ shinyServer(function(input,output,session){
       df_avail <- data.frame(y3, x3, m)
       df_avail<- data.frame(apply(df_avail, 2, unclass))
       
-       ggplot(df_avail)+
-        geom_line(aes( y =y3, 
-                       x = x3),
-                       size = 1, 
-                  color = "deepskyblue3")+
-        ggtitle("Average & Expected Availability") +
-        xlab("Decision Point") + ylab("Expected Availablility")+
-        ylim(0,1)+
-         geom_point(aes(y= m, x = x3), size = 1, 
-                    color = "red")+
-        theme(axis.text = element_text(size=12),
-              axis.title = element_text(size=14))
+       # ggplot(df_avail)+
+       #  geom_line(aes( y =y3, 
+       #                 x = x3),
+       #                 size = 1, 
+       #            color = "deepskyblue3")+
+       #  ggtitle("Average & Expected Availability") +
+       #  xlab("Decision Point") + ylab("Expected Availablility")+
+       #  ylim(0,1)+
+       #   geom_point(aes(y= m, x = x3), size = 1, 
+       #              color = "red")+
+       #  theme(
+       #      legend.position = 'top',
+       #      axis.text = element_text(size=12),
+       #      axis.title = element_text(size=14)) 
+       
+       
+       
+       
+       ggplot(data=df_avail) +
+           geom_line(mapping=aes(y     = y3,
+                                 x     = x3,
+                                 color = "Availability"), 
+                     size=1 ) +
+           geom_line(mapping=aes(y     = m,
+                                 x     = x3,
+                                 color ="Average Availability"),size=1) +
+           scale_color_manual(
+               values = c('Average Availability' = 'red',
+                          'Availability'         = 'deepskyblue3')) +
+           labs(color = "Legend") +
+           ylim(0,1) + 
+           ylab("Expected Availability") +
+           xlab("Decision Point") +
+           theme(legend.position = 'bottom')
+       
+       
+       
+       
       
     })
 
