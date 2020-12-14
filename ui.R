@@ -446,7 +446,7 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
       column(
         5,
         ### Three trends of success probability null curve to choose from
-        ### constant, linear, loglinear
+        ### constant, loglinear, logquadratic
         selectizeInput(
           "alpha_choices", 
           label = "Select one of the following trends for the success 
