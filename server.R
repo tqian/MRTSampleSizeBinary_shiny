@@ -14,7 +14,7 @@ shinyServer(function(input,output,session){
     rv$power_clicked <- FALSE
     
     # flags to make sure all parameters have settings before buttons clicked
-    rv$ea_set <- FALSE
+
     rv$null_set <- FALSE
     rv$te_set <- FALSE
     
@@ -603,7 +603,7 @@ shinyServer(function(input,output,session){
             result <- rep(input$avail_constant_mean, total_decision_points())
             
             rv$ea_shape <- "constant"
-            rv$ea_set <- TRUE
+
             
             validate(
                 need(min(result) > 0,
@@ -633,7 +633,7 @@ shinyServer(function(input,output,session){
                           length.out = total_decision_points())
             
             rv$ea_shape <- "linear"
-            rv$ea_set <- TRUE
+
             
             validate(
                 need(min(result) > 0,
@@ -657,7 +657,6 @@ shinyServer(function(input,output,session){
                      "Error: Number of days does not match"))
             
             rv$ea_shape <- "time-varying"
-            rv$ea_set <- TRUE
             
             validate(
                 need(min(result) > 0,
@@ -683,7 +682,6 @@ shinyServer(function(input,output,session){
                      "Error: Number of decision points does not match")
             
             rv$ea_shape <- "time-varying"
-            rv$ea_set <- TRUE
             
             validate(
                 need(min(result) > 0,
@@ -1046,7 +1044,8 @@ shinyServer(function(input,output,session){
     
     power <- eventReactive(input$button_calculate_power, {
         validate(need(
-            rv$ea_set & !is.null(rand_prob()) & rv$null_set & rv$te_set,
+            !is.null(avail_input()) & !is.null(rand_prob()) & 
+              rv$null_set & rv$te_set,
             "Provide values for all parameters first."
         ))
         rv$power_clicked <- TRUE
@@ -1090,8 +1089,8 @@ shinyServer(function(input,output,session){
             need(!is.na(power()) & !is.null(power()), 
                  paste0(
                      "There was an error in the computation of the power.", 
-                     " Most likely this comes from choice of null curve and ",
-                     "proximal treatment effect. ",
+                     " Most likely this comes from choice of null curve and",
+                     " proximal treatment effect. ",
                      " Check inputs and try again. 
                See mrtbincalc documentation for further details.")))
         
@@ -1099,7 +1098,6 @@ shinyServer(function(input,output,session){
         if (power() >= 0.4) {
 
             HTML(paste("<h5 style = 'color:black';> The power we get is ", 
-
                        round(power(), 3)*100,
                        "% with sample size ", 
                        input$sample_size,
@@ -1108,7 +1106,8 @@ shinyServer(function(input,output,session){
         } else {
             ### If the calculated power is less than 40% ###
 
-            HTML(paste("<h5 style = 'color:black';> The power we get is less than 40% with sample size", 
+            HTML(paste("<h5 style = 'color:black';> ", 
+                       "The power we get is less than 40% with sample size", 
 
                        input$sample_size, 
                        " when the significance level is ",
@@ -1128,7 +1127,8 @@ shinyServer(function(input,output,session){
       # call to compute results
         
       validate(need(
-            rv$ea_set & !is.null(rand_prob()) & rv$null_set & rv$te_set,
+            !is.null(avail_input()) & !is.null(rand_prob()) & 
+              rv$null_set & rv$te_set,
             FALSE
         ))
         
@@ -1262,7 +1262,8 @@ shinyServer(function(input,output,session){
     # this is displayed when on the sample size setting
     pow_vs_n_plot1 <- eventReactive(input$button_calculate_sample_size, {
         validate(need(
-            rv$ea_set & !is.null(rand_prob()) & rv$null_set & rv$te_set,
+            !is.null(avail_input()) & !is.null(rand_prob()) & 
+              rv$null_set & rv$te_set,
             FALSE
         ))
         rv$ss_clicked <- TRUE
@@ -1312,7 +1313,8 @@ shinyServer(function(input,output,session){
     # this is displayed on the power setting
     pow_vs_n_plot2 <- eventReactive(input$button_calculate_power, {
         validate(need(
-            rv$ea_set & !is.null(rand_prob()) & rv$null_set & rv$te_set,
+            !is.null(avail_input()) & !is.null(rand_prob()) &
+              rv$null_set & rv$te_set,
             FALSE
         ))
         rv$ss_clicked <- TRUE        
@@ -1361,7 +1363,8 @@ shinyServer(function(input,output,session){
     # case for when sample size is being calculated
     pow_summary1 <- eventReactive(input$button_calculate_sample_size, {
         validate(need(
-            rv$ea_set & !is.null(rand_prob()) & rv$null_set & rv$te_set,
+            !is.null(avail_input()) & !is.null(rand_prob()) &
+              rv$null_set & rv$te_set,
             FALSE
         ))
         rv$ss_clicked <- TRUE
@@ -1400,14 +1403,15 @@ shinyServer(function(input,output,session){
     output$power_summary1 <- renderDataTable({
         validate(need(!is.na(pow_summary1() & !is.null(pow_summary1())),
                       FALSE))
-        print('post valid')
+       
         datatable(pow_summary1(), colnames=c("Power", "Sample Size")) 
     }) 
     
     # for when power is being calculated
     pow_summary2 <- eventReactive(input$button_calculate_power, {
         validate(need(
-            rv$ea_set & !is.null(rand_prob()) & rv$null_set & rv$te_set,
+            !is.null(avail_input()) & !is.null(rand_prob()) & 
+              rv$null_set & rv$te_set,
             FALSE
         ))
         
@@ -1473,7 +1477,8 @@ shinyServer(function(input,output,session){
     
     observeEvent(input$button_calculate_power, {
         validate(need(
-            rv$ea_set & !is.null(rand_prob()) & rv$null_set & rv$te_set,
+            !is.null(avail_input()) & !is.null(rand_prob()) &
+              rv$null_set & rv$te_set,
             FALSE
         ))
         # only up date if valid power calculation was performed
