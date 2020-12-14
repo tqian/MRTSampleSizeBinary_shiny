@@ -1,4 +1,4 @@
-# shiny
+# Binary Outcome Micro-Randomized Trial Sample Size/Power Calculator
 
 This shiny app provides a sample size calculator for Micro-randomized Trials with
 binary outcomes. The sample size formula is developed in ["Sample Size
