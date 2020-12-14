@@ -60,6 +60,9 @@ shinyServer(function(input,output,session){
     # Output first 5 rows of table reading from file wrt decision times 
     # and output warnings if the format of the file is not correct
     output$P_inter_table_dec <- renderDataTable({      
+        validate(need("Randomization.Probability" %in% colnames(P_inter_dec()), 
+                      "Error: No column of randomization probability. 
+                              See template")) 
         
         delta <- as.vector(P_inter_dec()$Randomization.Probability)
         
@@ -78,9 +81,10 @@ shinyServer(function(input,output,session){
                  paste0("Error: some value of randomization probability", 
                         " is less than 0"))
         )
-        
+        pl <- min(nrow(P_inter_dec()), 5)
+        validate(need(pl > 0, "No rows to show."))
         datatable(P_inter_dec(), 
-                  options = list(pageLength = 5),
+                  options = list(pageLength = pl),
                   colnames = c("Decision Time Point" = 1,
                                "Randomization Probability" = 2),
                   rownames = FALSE)
@@ -103,8 +107,13 @@ shinyServer(function(input,output,session){
     # Output first 5 rows of table reading from file with respect to days
     # and output warnings if the format of the file is not correct
     # Output the first five rows of the table reading from the file for days
-    output$P_inter_table_days <- renderDataTable({     
+    output$P_inter_table_days <- renderDataTable({
+        validate(need("Randomization.Probability" %in% colnames(P_inter_days()), 
+                      "Error: No column of randomization probability. 
+                              See template")) 
+        
         delta <- as.vector(P_inter_days()$Randomization.Probability)
+        
         validate(
             need(!is.null(input$file1), "Warning: No file is uploaded"),
             
@@ -120,8 +129,12 @@ shinyServer(function(input,output,session){
                         " is less than 0"))
         )
         
+        pl <- min(nrow(P_inter_days()), 5)
+        
+        validate(need(pl > 0, "No rows to show."))
+        
         datatable(P_inter_days(), 
-                  options = list(pageLength = 5), 
+                  options = list(pageLength = pl), 
                   colnames = c("Day" = 1,
                                "Randomization Probability" = 2),
                   rownames = FALSE)
@@ -754,16 +767,18 @@ shinyServer(function(input,output,session){
     # Output first 5 rows of the table reading from file with respect to days
     # and output warnings if the format of the file is not correct
     # Output the first five rows of the table reading from the file for days
-    output$ea_inter_table_days <- DT::renderDataTable({      
+    output$ea_inter_table_days <- DT::renderDataTable({     
+      
+        validate(need(is.null(input$file0) ||
+                        "Expected.Availability" %in% colnames(ea_inter_days()),
+                      paste0(
+                        "Error: need a column titled 'Expected Availability';",
+                        " see template")))
+      
         delta <- as.vector(ea_inter_days()$Expected.Availability)
         
         validate(
             need(!is.null(input$file0), "Warning: No file is uploaded"),
-            
-            need(is.null(input$file0) || 
-                     "Expected.Availability" %in% colnames(ea_inter_days()),
-                 "Error: need a column titled 'Expected Availability';
-                  see template"),
             
             need(is.null(input$file0) ||
                      length(delta) == input$days , 
@@ -785,16 +800,17 @@ shinyServer(function(input,output,session){
 
     })
     
-    output$ea_inter_table_dec <- renderDataTable({    
+    output$ea_inter_table_dec <- renderDataTable({
+        validate(need(is.null(input$file0a) ||
+                      "Expected.Availability" %in% colnames(ea_inter_dec()),
+                      paste0(
+                        "Error: need a column titled 'Expected Availability';",
+                         " see template")))
+        
         delta <- as.vector(ea_inter_dec()$Expected.Availability)
         
         validate(
             need(!is.null(input$file0a), "Warning: No file is uploaded"),
-            
-            need(is.null(input$file0a) || 
-                     "Expected.Availability" %in% colnames(ea_inter_dec()),
-                 "Error: need a column titled 'Expected Availability'; 
-                  see template"),
             
             need(is.null(input$file0a) || 
                      length(delta) == input$days * input$occ_per_day, 
@@ -1305,7 +1321,7 @@ shinyServer(function(input,output,session){
     })  
     
     output$power_summary1 <- renderDataTable({
-       print('tabletable') 
+
        validate(need(!is.na(pow_summary1()) & !is.null(pow_summary1()),
                       FALSE))
        
