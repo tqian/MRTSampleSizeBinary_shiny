@@ -122,7 +122,7 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
     
     ### Background ###
     bsCollapse(
-      multiple = FALSE, 
+      multiple = FALSE,
       id = "background",
       bsCollapsePanel(
         h3("Background"),
@@ -193,7 +193,7 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
                   treatment effect within each day are identical and the trend 
                   of effects are constant, linear and quadratic. To calculate 
                   the sample size for general treatment effects, see the 
-                  formula in Liao et.al (2016).  ")
+                  formula in Liao et.al (2016).")
         )
       )
   ),
