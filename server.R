@@ -1139,6 +1139,19 @@ shinyServer(function(input,output,session){
                                "Succ. Prob. No Trt Shape",
                                "Trt Eff. Shape",
                                "Avail. Pattern"),
+                  caption = htmltools::tags$caption(
+                      style = "caption-side: bottom; text-align: center;",
+                      "Sample Size History Table: ", 
+                      htmltools::em("This table holds a summary of settings 
+                                     and outputs for sample size calculations.
+                                     It records sample size, power, 
+                                     significance level, randomization 
+                                     probability shape, total number of 
+                                     decision points, shape of success 
+                                     probability curve under no treatment 
+                                     and under treatment, and availability 
+                                     pattern. More details are contained in 
+                                     the downloaded version of this table.")),
                   rownames = FALSE)
     })
     
@@ -1468,7 +1481,21 @@ shinyServer(function(input,output,session){
                                    "Succ. Prob. No Trt Shape",
                                    "Trt Eff. Shape",
                                    "Avail. Pattern"),
-                      rownames = FALSE)
+                      rownames = FALSE,
+                      caption = htmltools::tags$caption(
+                          style = "caption-side: bottom; text-align: center;",
+                          "Power History Table: ", 
+                          htmltools::em("This table holds a summary of settings 
+                                         and outputs for power calculations.
+                                         It records sample size, power, 
+                                         significance level, randomization 
+                                         probability shape, total number of 
+                                         decision points, shape of success 
+                                         probability curve under no treatment 
+                                         and under treatment, and availability 
+                                         pattern. More details are contained in 
+                                         the downloaded version of this table.")
+                      ))
     })
     
     # download for power history table
