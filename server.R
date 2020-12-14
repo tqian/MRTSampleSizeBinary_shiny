@@ -490,79 +490,41 @@ shinyServer(function(input,output,session){
         x2 <- seq(1:length(alpha_input()))
         df_beta <- data.frame(x2, y2,y1)
         df_beta <- data.frame(apply(df_beta, 2, unclass))
-        legend_colors <-  c("Alt- Hypothesis" = "red3", "Null Hypothesis" = "deepskyblue3")
-        ggplot(df_beta)+
-          geom_line(aes( y = y1, 
-                         x = x2), size = 1, 
-                    color = "deepskyblue3", group=1)+
+
+        
+        
+        ggplot(data =df_beta)+
+          geom_line(mapping = aes( y = y1, 
+                                   x = x2, 
+                               color = "Null Hypothesis"), 
+                    size = 1)+
           ggtitle("Null & Alt Success Probability Curves ") +
           labs(x = "Decision Point",
                y = "Success Probability")+
           ylim(0,1)+
-          geom_point(aes(y= y2, x = x2), size = 1, 
-                         color = "red3")+ 
-          theme(axis.text = element_text(size=12),
-                axis.title = element_text(size=14))+
-          scale_colour_continuous(name  ="Hypothesis Curve",
-                                breaks=c("y1", "y1"),
-                                labels=c("Null", "Alt"))
+          geom_point(mapping = aes(y= y2, 
+                                   x = x2, 
+                              color = "Alternative Hypothesis"),
+                     size = 1)+
+                        
+      
+        scale_color_manual(
+          values = c("Null Hypothesis" = "deepskyblue3",
+                "Alternative Hypothesis" = "red3")) +
+          ggtitle("Success Probability Null and Alternative Curves") +
+          ylim(0,1) + 
+          ylab("Success Probability") +
+          xlab("Decision Point") +
+          labs(color = "Legend") +
+          theme(legend.position = 'bottom')
         
-         
-        # y3 <- avail_input()
-        # x3 <- seq(1:length(avail_input()) )
-        # m <- c(rep(mean(avail_input()), length(x3)))
-        
-        # df_avail <- data.frame(y3, x3, m)
-        # df_avail<- data.frame(apply(df_avail, 2, unclass))
-        
-        # ggplot(df_avail)+
-        #  geom_line(aes( y =y3, 
-        #                 x = x3),
-        #                 size = 1, 
-        #            color = "deepskyblue3")+
-        #  ggtitle("Average & Expected Availability") +
-        #  xlab("Decision Point") + ylab("Expected Availablility")+
-        #  ylim(0,1)+
-        #   geom_point(aes(y= m, x = x3), size = 1, 
-        #              color = "red")+
-        #  theme(
-        #      legend.position = 'top',
-        #      axis.text = element_text(size=12),
-        #      axis.title = element_text(size=14)) 
-        
-        
-        
+    
+   
         
       }
     })
       
-        # if(!is.null(alpha_input()) && !is.null(beta_input())){
-        # plot(alpha_input() * beta_input(), 
-        #      xlab = "Decision Point", 
-        #      ylab = "Success Probability", 
-        #      ylim = c(0, 1), 
-        #      type = "o",
-        #      pch = 16, 
-        #      cex = 0.8, 
-        #      col = 2)
-        # 
-        # points(x = 1:length(alpha_input()), 
-        #        y = alpha_input(), 
-        #        type = "o", 
-        #        pch = 16, 
-        #        cex = 0.8, 
-        #        col = 4)
-        # 
-        # legend("topleft", 
-        #        cex = 1, 
-        #        legend=c('Alternate Hypothesis', 'Null Hypothesis'),
-        #        col = c(2,4),
-        #        lty = c(1,1), 
-        #        pch=c(16,16),
-        #        bty = "n")
-        # }
-   
-    
+        
     
     ### p10, p11, pT0, pT1 ###
     
@@ -750,7 +712,7 @@ shinyServer(function(input,output,session){
            scale_color_manual(
                values = c("Average Availability" = "grey69",
                           "Availability"         = "deepskyblue3")) +
-           
+          ggtitle("Availability vs. Decision Points") +
            ylim(0,1) + 
            ylab("Expected Availability") +
            xlab("Decision Point") +
