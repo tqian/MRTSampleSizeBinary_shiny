@@ -388,30 +388,28 @@ shinyServer(function(input,output,session){
     output$beta_graph <- renderPlot({
       if(!is.null(alpha_input()) && !is.null(beta_input())){
         
+        
           validate(need(max(alpha_input()) < 1 && min(alpha_input()) > 0,
                         "Invalid probabilities. Must be between 0 and 1."))  
         
-        validate(need(max(beta_input()) < 1 && min(beta_input()) > 0,
+        validate(need(max(beta_input()*alpha_input()) < 1 && min(beta_input()*alpha_input()) > 0,
                       "Invalid probabilities. Must be between 0 and 1."))  
-        y1 = alpha_input()
-        y2 = alpha_input() * beta_input()
+      
         x2 = seq(1:length(alpha_input()) )
         df_beta <- data.frame(x2, y2,y1)
         
         ggplot(df_beta)+
           geom_line(aes( y = y1, 
                          x = x2), size = 1, 
-                    color = "deepskyblue3")+
+                    color = "deepskyblue3", group=1)+
           ggtitle("Null Vs. Alternative Hypothesis ") +
           xlab("Decision Point") + ylab("Success Probability")+
           ylim(0,1)+
           geom_point(aes(y= y2, x = x2), size = 1, 
                          color = "red3")+ 
           theme(axis.text = element_text(size=12),
-                axis.title = element_text(size=14))+
+                axis.title = element_text(size=14))
  
-        
-
         
       }
       
@@ -1163,3 +1161,4 @@ shinyServer(function(input,output,session){
     })
     
 })
+
