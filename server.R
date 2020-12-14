@@ -317,7 +317,7 @@ shinyServer(function(input,output,session){
     output$alpha_graph <- renderPlot({
       if (!is.null(alpha_input())){
         validate(need(max(alpha_input()) < 1 & min(alpha_input()) > 0,
-                    "Invalid probabilities. Must be between 0 and 1."))   
+                    "Current settings lead to invalid probabilities."))   
      
         ## ggplot in the works
         y1 = alpha_input()
@@ -473,16 +473,16 @@ shinyServer(function(input,output,session){
         ab_product <- alpha_input() * beta_input()  
           
         validate(need(max(alpha_input()) < 1 & min(alpha_input()) > 0,
-                        "Invalid probabilities. Must be between 0 and 1."))  
+                        "Current settings lead to invalid probabilities."))  
           
         validate(need(max(ab_product) < 1 & min(ab_product) > 0,
-                        "Invalid probabilities. Must be between 0 and 1."))  
+                        "Current settings lead to invalid probabilities."))  
           
        
         
         validate(need(max(beta_input()*alpha_input()) < 1 &
                           min(beta_input()*alpha_input()) > 0,
-                      "Invalid probabilities. Must be between 0 and 1."))  
+                      "Current settings lead to invalid probabilities."))  
       
      ## plot set up
         y1 <- alpha_input()
