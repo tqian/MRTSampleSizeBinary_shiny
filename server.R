@@ -511,7 +511,7 @@ shinyServer(function(input,output,session){
           values = c("Null Hypothesis" = "deepskyblue3",
                 "Alternative Hypothesis" = "red3")) +
           ggtitle("Success Probability Null and Alternative Curves") +
-          ylim(0,1) + 
+         
           ylab("Success Probability") +
           xlab("Decision Point") +
           labs(color = "Legend") +
