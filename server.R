@@ -498,7 +498,7 @@ shinyServer(function(input,output,session){
                                    x = x2, 
                                color = "Null Hypothesis"), 
                     size = 1)+
-          ggtitle("Null & Alt Success Probability Curves ") +
+ 
           labs(x = "Decision Point",
                y = "Success Probability")+
           ylim(0,1)+
@@ -512,7 +512,6 @@ shinyServer(function(input,output,session){
           values = c("Null Hypothesis" = "deepskyblue3",
                 "Alternative Hypothesis" = "red3")) +
           ggtitle("Success Probability Null and Alternative Curves") +
-         
           ylab("Success Probability") +
           xlab("Decision Point") +
           labs(color = "Legend") +
