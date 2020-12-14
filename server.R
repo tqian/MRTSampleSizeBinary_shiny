@@ -466,13 +466,26 @@ shinyServer(function(input,output,session){
     
     ### p10, p11, pT0, pT1 ###
     
-    p10 <- reactive({NULL}) #reactive({alpha_input()[1]})
+    # probability of success for under null at first time point
+    p10 <- reactive({
+        alpha_input()[1]
+    })
     
-    pT0 <- reactive({NULL}) #reactive({alpha_input()[total_decision_points()]})
+    # probability of success under null at final time point
+    pT0 <- reactive({
+        alpha_input()[total_decision_points()]
+    })
     
-    p11 <- reactive({NULL}) #reactive({alpha_input()[1] * beta_input()[1]})
+    # probability of success under alternative at first time point
+    p11 <- reactive({
+        alpha_input()[1] * beta_input()[1]
+    })
     
-    pT1 <- reactive({NULL}) #reactive({alpha_input()[total_decision_points()] * beta_input()[total_decision_points()]})
+    # probability of success under alternative at final time point
+    pT1 <- reactive({
+        alpha_input()[total_decision_points()] *
+            beta_input()[total_decision_points()]
+    })
 
 # Expected availability ---------------------------------------------------
     
@@ -515,8 +528,6 @@ shinyServer(function(input,output,session){
             result <- rep(ea_inter_days()$Expected.Availability, 
                           each = input$occ_per_day)
             
-
-
             validate(need(length(result)==total_decision_points(),
                      "Error: Number of days does not match"))
             
@@ -572,13 +583,10 @@ shinyServer(function(input,output,session){
                pch=c(16,NA),bty = "n")
     })
  
-    
-
-    
-
 
     
     ### Reading the file with respect to days for expected availability ###
+    
     # time-varying days
     ea_inter_days <- reactive({     
         
@@ -707,14 +715,15 @@ shinyServer(function(input,output,session){
                    
                    message("Try calculate sample size")
                    
-                   calculate_mrt_bin_samplesize_f(avail_pattern = avail_input(),
-                                                  f_t = f_t(),
-                                                  g_t = g_t(),
-                                                  beta = b_mat(),
-                                                  alpha = a_mat(),
-                                                  p_t = rand_prob(),
-                                                  gamma = input$sig_level,
-                                                  b = 1-input$power) 
+                   calculate_mrt_bin_samplesize_f(
+                       avail_pattern = avail_input(),
+                       f_t           = f_t(),
+                       g_t           = g_t(),
+                       beta          = b_mat(),
+                       alpha         = a_mat(),
+                       p_t           = rand_prob(),
+                       gamma         = input$sig_level,
+                       b             = 1-input$power) 
 
                },
                error=function(cond) {
@@ -783,13 +792,13 @@ shinyServer(function(input,output,session){
                 message("Try calculate power")
                 
                 calculate_mrt_bin_power_f(avail_pattern = avail_input(),
-                                          f_t = f_t(),
-                                          g_t = g_t(),
-                                          beta = b_mat(),
-                                          alpha = a_mat(),
-                                          p_t = rand_prob(),
-                                          gamma = input$sig_level,
-                                          n = input$sample_size)
+                                          f_t           = f_t(),
+                                          g_t           = g_t(),
+                                          beta          = b_mat(),
+                                          alpha         = a_mat(),
+                                          p_t           = rand_prob(),
+                                          gamma         = input$sig_level,
+                                          n             = input$sample_size)
                 
             },
             error=function(cond) {
@@ -844,45 +853,47 @@ shinyServer(function(input,output,session){
     sample_size_history <- reactiveValues(data=NULL)
     
     observeEvent(input$button_calculate_sample_size, {
-        # only update if valid sample size
-        validate(need(!is.null(sample_size()) & !is.na(sample_size()), FALSE))
+      # only update if valid sample size
+      validate(need(!is.null(sample_size()) & !is.na(sample_size()), FALSE))
         
-        sample_size_history$avail_pattern <- c(sample_size_history$avail_pattern, 
+      sample_size_history$avail_pattern <- c(sample_size_history$avail_pattern, 
                                                input$avail_choices)
         
-        sample_size_history$avail_init <- c(sample_size_history$avail_init, 
+      sample_size_history$avail_init <- c(sample_size_history$avail_init, 
                                             avail_input()[1])
         
-        sample_size_history$avail_final <- c(sample_size_history$avail_final, 
-                                             avail_input()[total_decision_points()])
+      sample_size_history$avail_final <- c(
+          sample_size_history$avail_final, 
+          avail_input()[total_decision_points()])
         
-        sample_size_history$rand_prob_shape <- c(sample_size_history$rand_prob_shape, 
-                                           rv$rp_shape)
+      sample_size_history$rand_prob_shape <- c(
+          sample_size_history$rand_prob_shape, 
+          rv$rp_shape)
         
-        sample_size_history$alpha_shape <- c(sample_size_history$alpha_shape, 
+      sample_size_history$alpha_shape <- c(sample_size_history$alpha_shape, 
                                              input$alpha_choices)
         
-        #sample_size_history$p10 <- c(sample_size_history$p10, p10())
+      sample_size_history$p10 <- c(sample_size_history$p10, p10())
         
-        #sample_size_history$pT0 <- c(sample_size_history$pT0, pT0())
+      sample_size_history$pT0 <- c(sample_size_history$pT0, pT0())
         
-        sample_size_history$beta_shape <- c(sample_size_history$beta_shape, 
+      sample_size_history$beta_shape <- c(sample_size_history$beta_shape, 
                                             input$beta_choices)
         
-        #sample_size_history$p11 <- c(sample_size_history$p11, p11())
+      sample_size_history$p11 <- c(sample_size_history$p11, p11())
         
-        #sample_size_history$pT1 <- c(sample_size_history$pT1, pT1())
+      sample_size_history$pT1 <- c(sample_size_history$pT1, pT1())
         
-        sample_size_history$sample_size <- c(sample_size_history$sample_size, 
+      sample_size_history$sample_size <- c(sample_size_history$sample_size, 
                                              sample_size())
         
-        sample_size_history$power <- c(sample_size_history$power, 
+      sample_size_history$power <- c(sample_size_history$power, 
                                        input$power)
         
-        sample_size_history$sig_level <- c(sample_size_history$sig_level, 
+      sample_size_history$sig_level <- c(sample_size_history$sig_level, 
                                            input$sig_level)
         
-        sample_size_history$tot_dec_pts <- c(sample_size_history$tot_dec_pts,
+      sample_size_history$tot_dec_pts <- c(sample_size_history$tot_dec_pts,
                                              total_decision_points())
     })
 
@@ -895,10 +906,10 @@ shinyServer(function(input,output,session){
                    "Total Dec Pts" = sample_size_history$tot_dec_pts,
                    "Succ Prob No Trt Shape" = sample_size_history$alpha_shape,
                    "Trt Eff Shape" = sample_size_history$beta_shape,
-                   #"p10" = sample_size_history$p10,
-                   #"pT0" = sample_size_history$pT0,
-                   #"p11" = sample_size_history$p11,
-                   #"pT1" = sample_size_history$pT1,
+                   "p10" = sample_size_history$p10,
+                   "pT0" = sample_size_history$pT0,
+                   "p11" = sample_size_history$p11,
+                   "pT1" = sample_size_history$pT1,
                    "Avail Pattern" = sample_size_history$avail_pattern,
                    "Avail Init" = sample_size_history$avail_init,
                    "Avail Final" = sample_size_history$avail_final)
@@ -944,12 +955,12 @@ shinyServer(function(input,output,session){
                 message("Try power vs n plot")
                 
                 power_vs_n_plot(avail_pattern = avail_input(),
-                                    f_t = f_t(),
-                                    g_t = g_t(),
-                                    beta = b_mat(),
-                                    alpha = a_mat(),
-                                    p_t = rand_prob(),
-                                    gamma = input$sig_level)
+                                    f_t       = f_t(),
+                                    g_t       = g_t(),
+                                    beta      = b_mat(),
+                                    alpha     = a_mat(),
+                                    p_t       = rand_prob(),
+                                    gamma     = input$sig_level)
                 
             },
             error=function(cond) {
@@ -989,12 +1000,12 @@ shinyServer(function(input,output,session){
                 message("Try power vs n plot")
                 
                 power_vs_n_plot(avail_pattern = avail_input(),
-                                    f_t = f_t(),
-                                    g_t = g_t(),
-                                    beta = b_mat(),
-                                    alpha = a_mat(),
-                                    p_t = rand_prob(),
-                                    gamma = input$sig_level)
+                                    f_t       = f_t(),
+                                    g_t       = g_t(),
+                                    beta      = b_mat(),
+                                    alpha     = a_mat(),
+                                    p_t       = rand_prob(),
+                                    gamma     = input$sig_level)
                 
             },
             error=function(cond) {
@@ -1035,24 +1046,22 @@ shinyServer(function(input,output,session){
                 message("Enter try for power summary")
                 
                 power_summary(avail_pattern = avail_input(),
-                              f_t = f_t(),
-                              g_t = g_t(),
-                              beta = b_mat(),
-                              alpha = a_mat(),
-                              p_t = rand_prob(),
-                              gamma = input$sig_level)
+                              f_t           = f_t(),
+                              g_t           = g_t(),
+                              beta          = b_mat(),
+                              alpha         = a_mat(),
+                              p_t           = rand_prob(),
+                              gamma         = input$sig_level)
                 
             },
             error=function(cond) {
                 message("Here's the original error message:")
                 message(cond)
-                # Choose a return value in case of error
                 return(NA)
             },
             warning=function(cond) {
                 message("Here's the original warning message:")
                 message(cond)
-                # Choose a return value in case of warning
                 return(NA)
             },
             finally={
@@ -1062,16 +1071,15 @@ shinyServer(function(input,output,session){
         return(out)
     })  
     
-    output$power_summary1 <- DT::renderDataTable({
-                                    validate(need(!is.na(pow_summary1() & !is.null(pow_summary1())),
-                                                  FALSE))
-                                    pow_summary1() 
-                                }) 
+    output$power_summary1 <- renderDataTable({
+        validate(need(!is.na(pow_summary1() & !is.null(pow_summary1())),
+                      FALSE))
+        pow_summary1() 
+    }) 
     
     # for when power is being calculated
     pow_summary2 <- eventReactive(input$button_calculate_power, {
-        # The determination of randomization probability is not well-implemented.
-        # Need to think more carefully, because there are three sources of rand. prob.
+
         
         rv$power_clicked <- TRUE
         
@@ -1082,24 +1090,22 @@ shinyServer(function(input,output,session){
                 message("Enter try for power summary.")
                 
                 power_summary(avail_pattern = avail_input(),
-                              f_t = f_t(),
-                              g_t = g_t(),
-                              beta = b_mat(),
-                              alpha = a_mat(),
-                              p_t = rand_prob(),
-                              gamma = input$sig_level)
+                              f_t           = f_t(),
+                              g_t           = g_t(),
+                              beta          = b_mat(),
+                              alpha         = a_mat(),
+                              p_t           = rand_prob(),
+                              gamma         = input$sig_level)
                 
             },
             error=function(cond) {
                 message("Here's the original error message:")
                 message(cond)
-                # Choose a return value in case of error
                 return(NA)
             },
             warning=function(cond) {
                 message("Here's the original warning message:")
                 message(cond)
-                # Choose a return value in case of warning
                 return(NA)
             },
             finally={
@@ -1111,7 +1117,7 @@ shinyServer(function(input,output,session){
         
     })  
     
-    output$power_summary2 <- DT::renderDataTable({
+    output$power_summary2 <- renderDataTable({
         validate(need(!is.null(pow_summary2()) & !is.na(pow_summary2()),
                       FALSE))
         pow_summary2()
@@ -1142,25 +1148,37 @@ shinyServer(function(input,output,session){
         
         power_history$avail_pattern <- c(power_history$avail_pattern, 
                                          input$avail_choices)
+        
         power_history$avail_init <- c(power_history$avail_init, 
                                       avail_input()[1])
+        
         power_history$avail_final <- c(power_history$avail_final, 
                                        avail_input()[total_decision_points()])
+        
         power_history$alpha_shape <- c(power_history$alpha_shape, 
                                        input$alpha_choices)
-        #power_history$p10 <- c(power_history$p10, p10())
-        #power_history$pT0 <- c(power_history$pT0, pT0())
+        
+        power_history$p10 <- c(power_history$p10, p10())
+        
+        power_history$pT0 <- c(power_history$pT0, pT0())
+        
         power_history$beta_shape <- c(power_history$beta_shape, 
                                       input$beta_choices)
-        #power_history$p11 <- c(power_history$p11, p11())
-        #power_history$pT1 <- c(power_history$pT1, pT1())
+        
+        power_history$p11 <- c(power_history$p11, p11())
+        
+        power_history$pT1 <- c(power_history$pT1, pT1())
+        
         power_history$sample_size <- c(power_history$sample_size, 
                                        input$sample_size)
         power_history$power <- c(power_history$power, power())
+        
         power_history$sig_level <- c(power_history$sig_level, 
                                      input$sig_level)
+        
         power_history$rand_prob_shape <- c(power_history$rand_prob_shape, 
                                      rv$rp_shape)
+        
         power_history$total_dec_pts <- c(power_history$total_dec_pts,
                                          total_decision_points())
     })
@@ -1174,10 +1192,10 @@ shinyServer(function(input,output,session){
                    "Succ Prob No Trt Shape" = power_history$alpha_shape,
                    "Trt Eff Shape" = power_history$beta_shape,
                    "Total Dec Pts" = power_history$total_dec_pts,
-                  # "p10" = power_history$p10,
-                  # "pT0" = power_history$pT0,
-                  # "p11" = power_history$p11,
-                  # "pT1" = power_history$pT1,
+                   "p10" = power_history$p10,
+                   "pT0" = power_history$pT0,
+                   "p11" = power_history$p11,
+                   "pT1" = power_history$pT1,
                    "Avail Pattern" = power_history$avail_pattern,
                    "Avail Init" = power_history$avail_init,
                    "Avail Final" = power_history$avail_final)
