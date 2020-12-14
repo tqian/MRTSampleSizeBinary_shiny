@@ -287,8 +287,11 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
             accept = c('.csv')
             ),
           
-          p("If you want a template of a .csv file, you can first download the 
-             template and then try uploading them."
+          p("With this setting, the expected availability for each decision 
+             point on a given day will be the same, but expected  
+             availability can vary across days. If you want a template of a 
+             .csv file, you can first download the template and then try 
+             uploading them."
             ),
           
           downloadButton("ea_days_template", "Template"),
@@ -410,8 +413,10 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
             accept = c('.csv')
             ),
           
-          p("If you want a template of .csv file, you can first download the 
-             template and then try uploading them."
+          p("With this setting randomization probabilities for decision points 
+             on the same day will be the same, but randomization probabilities 
+             across days can differ. If you want a template of .csv file, you 
+             can first download the template and then try uploading them."
             ),
           
           downloadButton("days_template", "Template"),
