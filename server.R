@@ -409,8 +409,8 @@ shinyServer(function(input,output,session){
                          color = "red3")+ 
           theme(axis.text = element_text(size=12),
                 axis.title = element_text(size=14))+
-        scale_colour_discrete(breaks=c("Null", "Alt"),
-                              labels=c("Blue", "red"))
+ 
+        
 
         
       }
