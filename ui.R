@@ -40,7 +40,8 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
                h6 {font-family: 'Roboto Condensed', sans-serif;}")    
   ),
   
-  ### Introduction of MRT-SS Calculator on left-hand side panel ###
+
+  # Intro of MRT bin calcon LHS ---------------------------------------------
   sidebarPanel(
     
     ### Purpose ###
@@ -120,7 +121,8 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
     br(),
     br(),
     
-    ### Background ###
+
+    # Background --------------------------------------------------------------
     bsCollapse(
       multiple = FALSE,
       id = "background",
@@ -198,7 +200,8 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
       )
   ),
   
-  ### Main Panel on the right-hand side ###
+
+  # Main panel on RHS -------------------------------------------------------
   mainPanel(
     tags$hr(),
     
@@ -233,6 +236,7 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
       column(6,
              h3(paste("")))
     ),
+    
     br(),
     br(),
     
@@ -287,6 +291,7 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
             accept = c('.csv')
             ),
           
+          # explanation of how to use/what this setting means
           p("With this setting, the expected availability for each decision 
              point on a given day will be the same, but expected  
              availability can vary across days. If you want a template of a 
@@ -413,6 +418,7 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
             accept = c('.csv')
             ),
           
+          # explanation of how to use/what this setting means
           p("With this setting randomization probabilities for decision points 
              on the same day will be the same, but randomization probabilities 
              across days can differ. If you want a template of .csv file, you 
