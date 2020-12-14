@@ -508,12 +508,12 @@ shinyServer(function(input,output,session){
                                 labels=c("Null", "Alt"))
         
          
-        y3 <- avail_input()
-        x3 <- seq(1:length(avail_input()) )
-        m <- c(rep(mean(avail_input()), length(x3)))
+        # y3 <- avail_input()
+        # x3 <- seq(1:length(avail_input()) )
+        # m <- c(rep(mean(avail_input()), length(x3)))
         
-        df_avail <- data.frame(y3, x3, m)
-        df_avail<- data.frame(apply(df_avail, 2, unclass))
+        # df_avail <- data.frame(y3, x3, m)
+        # df_avail<- data.frame(apply(df_avail, 2, unclass))
         
         # ggplot(df_avail)+
         #  geom_line(aes( y =y3, 
