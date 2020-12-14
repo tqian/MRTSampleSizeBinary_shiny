@@ -270,12 +270,14 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
             "avail_linear_initial", 
             label = "Initial Value of Expected Availability", 
             min = 0, max = 1,value = 0.8),
+          
           sliderInput(
             "avail_linear_final",
             label = "Final Value of Expected Availability", 
             min = 0, max = 1,value = 0.6
             )
           ),
+        
         conditionalPanel(
           condition = "input.avail_choices == 'tv_days' ",
           fileInput(
@@ -284,32 +286,41 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
              to upload", 
             accept = c('.csv')
             ),
+          
           p("If you want a template of a .csv file, you can first download the 
              template and then try uploading them."
             ),
+          
           downloadButton("ea_days_template", "Template"),
+          
           p("In the sample file, the expected availability is contantly 0.7"),
           p("The number of inputs for this file should be equal to the number 
              of days."),
           p("Showing the first 5 rows of the uploaded file."),
+          
           dataTableOutput("ea_inter_table_days")
           ),
              
         conditionalPanel(
           condition = "input.avail_choices == 'tv_dec_pts' ",
+          
           fileInput(
             "file0a",
             "Choose a .csv file of time-varying expected availability 
              (Decision Times) to upload",
             accept = c('.csv')
             ),
+          
           p("If you want a template of a .csv file, you can first download this 
              template and then try uploading them."),
+          
           downloadButton("ea_dec_pts_template", "Template"),
+          
           p("In the sample file, the expected availability is contantly 0.7."),
           p("The number of inputs for this file should be equal to the number 
              of decision points."),
           p("Showing the first 5 rows of the uploaded file."),
+          
           dataTableOutput('ea_inter_table_dec')
           ),
              
@@ -325,10 +336,12 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
         ### Comments on linear pattern of expected availability ###
         conditionalPanel(
           condition = "input.avail_choices == 'linear'",
+          
           p(em("Notes: "), 
             "A linearly increasing pattern of expected availability might be 
              used if participants will find the intervention useful and thus 
              more likely to turn the intervention on"),
+          
           p("A linearly decreasing pattern of expected availability might be 
              used if participants learn more about the intervetion and get 
              bored through the course of the study and thus getting less likely 
@@ -376,16 +389,19 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
         ### Inputs for constant pattern of expected availability ###
         conditionalPanel(
           condition = "input.rand_prob_choices =='constant' ",
+          
           numericInput(
             "rand_prob_const",                               
             label = "Constant Randomization Probability",
             value = 0.4 ),
+          
           textOutput("setting_warning_ranPro") 
           ),
 
         ### Inputs for linear pattern of expected availability ###
         conditionalPanel(
           condition = "input.rand_prob_choices == 'tv_days' ",
+          
           fileInput(
             "file1",
             "Choose a .csv file of time-varying randomization probability 
@@ -393,36 +409,45 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
                                         
             accept = c('.csv')
             ),
+          
           p("If you want a template of .csv file, you can first download the 
              template and then try uploading them."
             ),
+          
           downloadButton("days_template", "Template"),
+          
           p("In the sample file, the randomization probability is contantly 
              0.4"),
           p("The number of inputs for this file should be equal to the number 
              of days."),
           p("Showing the first 5 rows of the uploaded file."),
+          
           dataTableOutput("P_inter_table_days")
           ),
 
         ### Inputs for linear pattern of expected availability ###
         conditionalPanel(
           condition = "input.rand_prob_choices == 'tv_dec_pts' ",
+          
           fileInput(
             "file2",
             "Choose a .csv file of time-varying randomization probability 
              (Decision Times) to upload",
             accept = c('.csv')
             ),
+          
           p("If you want a template of .csv file, you can first download the 
              template and then try uploading them."
             ),
+          
           downloadButton("dec_pts_template", "Template"),
+          
           p("In the sample file, the randomization probability is contantly 
              0.4"),     
           p("The number of inputs for this file should be equal to the number 
              of decision times."),
           p("Showing the first 5 rows of the uploaded file."),
+          
           dataTableOutput('P_inter_table_dec')
           ),
       )
@@ -460,10 +485,12 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
         ### Inputs for constant trend of success probability null curve ###
         conditionalPanel(
           condition = "input.alpha_choices =='constant'",
+          
           sliderInput(
             "alpha_constant_mean", 
             label = "Average of Success Probability Null Curve",
             min = 0, max = 1, value = 0.5),
+          
           p(em("Notes"),
             ": The success probability under no treatment stays constant over 
              the study.")),
@@ -471,19 +498,23 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
         ### Inputs for loglinear trend of success probability null curve ###
         conditionalPanel(
           condition = "input.alpha_choices == 'loglinear' ",
+          
           sliderInput(
             "alpha_loglinear_initial", 
             label = "Initial Value of Success Probability Null Curve", 
             min = 0, max = 1,value = 0.6),
+          
           sliderInput(
             "alpha_loglinear_final",
             label = "Final Value of Success Probability Null Curve", 
             min = 0, max = 1,value = 0.4),
+          
           p(em("Notes"),
             ": The loglinearly increasing form of a success probability null 
              curve might be used if participants will get more enthusiastically 
              engage in the apps and thus the success probability under no 
              treatment will increase as the study goes."),
+          
           p("The loglinearly decreasing form of a success probability null 
             curve might be used if participantsare likely to disengage the 
             activity suggestionss and thus the success probability under 
@@ -493,18 +524,22 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
         ### Inputs for logquadratic trend of success probability null curve ###
         conditionalPanel(
           condition = "input.alpha_choices == 'logquadratic' ",
+          
           sliderInput(
             "alpha_logquad_initial", 
             label = "Initial Value of Success Probability Null Curve", 
             min = 0, max = 1,value = 0.6),
+          
           sliderInput(
             "alpha_logquad_change_val",
             label = "Change Point Value of Success Probability Null Curve", 
             min = 0, max = 1,value = 0.4),
+          
           numericInput(
             "alpha_logquad_change_pt",
             label = "Change point of Success Probability Null Curve", 
             value = 10),
+          
           p(em("Notes"),
             ": The success probability under no treatment varies quadratically 
              over the study.")
@@ -554,6 +589,7 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
         ### Inputs for constant trend of proximal treatment effect ###
         conditionalPanel(
           condition = "input.beta_choices =='constant'",
+          
           sliderInput(
             "beta_constant_mean", 
             label = "Average of Proximal Treatment Effect",
@@ -565,19 +601,23 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
         ### Inputs for loglinear trend of proximal treatment effect ###
         conditionalPanel(
           condition = "input.beta_choices == 'loglinear' ",
+          
           sliderInput(
             "beta_loglinear_initial", 
             label = "Initial Value of Proximal Treatment Effect",
             min = 0, max = 3.0, value = 1.3, step = 0.01),
+          
           sliderInput(
             "beta_loglinear_final",
             label = "Final Value of Proximal Treatment Effect",
             min = 0, max = 3.0, value = 1.1, step = 0.01),
+          
           p(em("Notes"),
             ": The loglinearly increasing form of a proximal treatment effect 
              might be used if participants will get more enthusiastically 
              engage in the apps and thus the proximal treatment effect will 
              increase as the study goes."),
+          
           p("The loglinearly decreasing form of a proximal treatment effect 
              might be used if participantsare likely to disengage the activity 
              suggestionss and thus the proximal treatment effect will decrease 
@@ -587,18 +627,22 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
         ### Inputs for logquadratic trend of proximal treatment effect ###
         conditionalPanel(
           condition = "input.beta_choices == 'logquadratic' ",
+          
           sliderInput(
             "beta_logquad_initial", 
             label = "Initial Value of Proximal Treatment Effect", 
             min = 0, max = 1,value = 0.6),
+          
           sliderInput(
             "beta_logquad_change_val",
             label = "Change Point Value of Proximal Treatment Effect", 
             min = 0, max = 1,value = 0.4),
+          
           numericInput(
             "beta_logquad_change_pt",
             label = "Change point of Proximal Treatment Effect", 
             value = 10),
+          
           p(em("Notes"),
             ": The proximal treatment effect under no treatment varies 
              quadratically over the study.")
@@ -614,6 +658,7 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
              includes(input.beta_choices) && 
              ['constant', 'loglinear', 'logquadratic'].
              includes(input.alpha_choices)",
+          
           plotOutput("beta_graph"))
       )
       
@@ -641,6 +686,7 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
         ### type in power for sample size calculation ###
         conditionalPanel(
           condition = "input.radio_choices=='choice_sample_size'",
+          
           numericInput(
             "power", 
             label = HTML("Desired Power"), 
@@ -650,6 +696,7 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
         ### type in sample size if you want to calculate the power attained ###
         conditionalPanel(
           condition = "input.radio_choices=='choice_power'",
+          
           numericInput(
             "sample_size", 
             label = HTML("Number of Participants"), 
@@ -670,12 +717,14 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
         ### Output warnings for wrong format in "desired power" ###
         conditionalPanel(
           condition = "input.radio_choices=='choice_sample_size'",
+          
           textOutput("choice_sample_size_warning")
           ),
              
         ### Output warnings for wrong format in "Number of participants" ###
         conditionalPanel(
           condition = "input.radio_choices=='choice_power'",
+          
           textOutput("choice_power_warning")
           ),
              
@@ -691,33 +740,49 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
     tabsetPanel(
       tabPanel(
         "Current Result",
+        
         conditionalPanel(
           condition = "input.radio_choices == 'choice_sample_size'",
+          
           actionButton("button_calculate_sample_size", "Result"),
+          
           uiOutput("sample_size"),
+          
           plotOutput("power_vs_n1"),
+          
           dataTableOutput("power_summary1")
           ),
+        
         conditionalPanel(
           condition = "input.radio_choices == 'choice_power'",
+          
           actionButton("button_calculate_power", "Result"),
+          
           uiOutput("power"),
+          
           plotOutput("power_vs_n2"),
+          
           dataTableOutput("power_summary2")                                      
           ),
         ),
       tabPanel(
         "History",
+        
         conditionalPanel(
           condition = "input.radio_choices == 'choice_sample_size'",
+          
           dataTableOutput("sample_size_history_table"),
+          
           uiOutput('download_ss')
           ),
                
                
         conditionalPanel(
+          
           condition = "input.radio_choices == 'choice_power'",
+          
           dataTableOutput("power_history_table"),
+          
           uiOutput('download_pow')
           )
         )
