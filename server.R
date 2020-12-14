@@ -326,14 +326,17 @@ shinyServer(function(input,output,session){
         
         ggplot(df_alpha)+
         geom_line(aes( y = alpha_input(), 
-                     x = seq(1:length(alpha_input()))), size = 1, 
+                     x = seq(1:length(alpha_input()))),
+                  size = 1, 
                 color = "deepskyblue3", group=1)+
         ggtitle("Success Probability Null Curve") +
-        xlab("Decision Point") + ylab("Baseline Success Probability")+
+        xlab("Decision Point") + 
+        ylab("Baseline Success Probability")+
         ylim(0,1)+
         theme(axis.text = element_text(size=12),
               axis.title = element_text(size=14))
-      
+        
+          
       }
     })
     
@@ -479,29 +482,33 @@ shinyServer(function(input,output,session){
                           min(beta_input()*alpha_input()) > 0,
                       "Invalid probabilities. Must be between 0 and 1."))  
       
-        
-
-
-        y1 = alpha_input()
-        y2 = beta_input()*alpha_input()
-        x2 = seq(1:length(alpha_input()) )
+     ## plot set up
+        y1 <- alpha_input()
+        y2 <- beta_input()*alpha_input()
+        x2 <- seq(1:length(alpha_input()))
         df_beta <- data.frame(x2, y2,y1)
         df_beta <- data.frame(apply(df_beta, 2, unclass))
-        
+        legend_colors <-  c("Alt- Hypothesis" = "red", "Null Hypothesis" = "deepskyblue3")
         ggplot(df_beta)+
-          geom_line(aes( y = y2, 
+          geom_line(aes( y = y1, 
                          x = x2), size = 1, 
-                    color = "deepskyblue3",group=1)+
-          ggtitle("Null Vs. Alternative Hypothesis ") +
-                   
-          xlab("Decision Point") + ylab("Success Probability")+
+                    color = "deepskyblue3", group=1)+
+          ggtitle("Null & Alt Success Probability Curves ") +
+          labs(x = "Decision Point",
+               y = "Success Probability")+
           ylim(0,1)+
-          geom_point(aes(y= y1, x = x2), size = 1, 
+          geom_point(aes(y= y2, x = x2), size = 1, 
                          color = "red3")+ 
           theme(axis.text = element_text(size=12),
-                axis.title = element_text(size=14))
+                axis.title = element_text(size=14))+
+          scale_colour_continuous(name  ="Hypothesis Curve",
+                                breaks=c("y1", "y1"),
+                                labels=c("Null", "Alt"))
+        
+         
 
       }
+    })
       
         # if(!is.null(alpha_input()) && !is.null(beta_input())){
         # plot(alpha_input() * beta_input(), 
@@ -528,7 +535,7 @@ shinyServer(function(input,output,session){
         #        pch=c(16,16),
         #        bty = "n")
         # }
-    })
+   
     
     
     ### p10, p11, pT0, pT1 ###
@@ -687,7 +694,7 @@ shinyServer(function(input,output,session){
                        x = x3),
                        size = 1, 
                   color = "deepskyblue3")+
-        ggtitle("Availability") +
+        ggtitle("Average & Expected Availability") +
         xlab("Decision Point") + ylab("Expected Availablility")+
         ylim(0,1)+
          geom_point(aes(y= m, x = x3), size = 1, 
@@ -696,6 +703,9 @@ shinyServer(function(input,output,session){
               axis.title = element_text(size=14))
       
     })
+
+
+
 
        
         
@@ -734,6 +744,7 @@ shinyServer(function(input,output,session){
     
 
     
+
 
 
     
@@ -882,13 +893,20 @@ shinyServer(function(input,output,session){
 
     sample_size <- eventReactive(input$button_calculate_sample_size, {
         
+
+
+
+
+
         # check all parameters are set before finding sample size
+
         validate(need(
             !is.null(avail_input()) & !is.null(rand_prob()) &
                 rv$null_set & rv$te_set,
             "Provide values for all parameters first."
         ))
         
+
         rv$ss_clicked <- TRUE
            
            out <- tryCatch(
@@ -941,7 +959,7 @@ shinyServer(function(input,output,session){
         
         if (sample_size() > 10) {
             HTML(
-              paste("<h5 style = 'color:blue';> The required sample size is ",
+              paste("<h5 style = 'color:black';> The required sample size is ",
                     sample_size(), 
                     "to attain", 
                     input$power*100,
@@ -950,7 +968,7 @@ shinyServer(function(input,output,session){
         } else {
             # if calculated sample size <=10, don't output sample size
             HTML(
-              paste("<h5 style = 'color:blue';> The required sample size is 
+              paste("<h5 style = 'color:black';> The required sample size is 
                      less than or equal to 10 to attain", 
                     input$power*100,
                     "% power when the significance level is",
@@ -1018,7 +1036,9 @@ shinyServer(function(input,output,session){
         
         
         if (power() >= 0.4) {
-            HTML(paste0("<h5 style = 'color:blue';> The power we get is ", 
+
+            HTML(paste("<h5 style = 'color:black';> The power we get is ", 
+
                        round(power(), 3)*100,
                        "% with sample size ", 
                        input$sample_size,
@@ -1026,8 +1046,9 @@ shinyServer(function(input,output,session){
                        input$sig_level,"."))
         } else {
             ### If the calculated power is less than 40% ###
-            HTML(paste0("<h5 style = 'color:blue';>", 
-                       "The power we get is less than 40% with sample size ", 
+
+            HTML(paste("<h5 style = 'color:black';> The power we get is less than 40% with sample size", 
+
                        input$sample_size, 
                        " when the significance level is ",
                        input$sig_level,"."))
