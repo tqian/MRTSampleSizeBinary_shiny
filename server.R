@@ -498,11 +498,8 @@ shinyServer(function(input,output,session){
                                    x = x2, 
                                color = "Null Hypothesis"), 
                     size = 1)+
- 
-          labs(x = "Decision Point",
-               y = "Success Probability")+
           ylim(0,1)+
-          geom_point(mapping = aes(y= y2, 
+          geom_line(mapping = aes(y= y2, 
                                    x = x2, 
                               color = "Alternative Hypothesis"),
                      size = 1)+
