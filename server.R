@@ -388,18 +388,25 @@ shinyServer(function(input,output,session){
     output$beta_graph <- renderPlot({
       if(!is.null(alpha_input()) && !is.null(beta_input())){
         
+          validate(need(max(alpha_input()) < 1 && min(alpha_input()) > 0,
+                        "Invalid probabilities. Must be between 0 and 1."))  
         
+        validate(need(max(beta_input()) < 1 && min(beta_input()) > 0,
+                      "Invalid probabilities. Must be between 0 and 1."))  
+        y1 = alpha_input()
         y2 = alpha_input() * beta_input()
-        x1 = seq(1:length(alpha_input()) )
-        df_beta <- data.frame(x2, y2)
+        x2 = seq(1:length(alpha_input()) )
+        df_beta <- data.frame(x2, y2,y1)
         
         ggplot(df_beta)+
-          geom_point(aes( y = alpha_input(), 
-                         x = seq(1:length(alpha_input()))), size = 1, 
+          geom_line(aes( y = y2, 
+                         x = x2), size = 1, 
                     color = "deepskyblue3")+
           ggtitle("Success Probability Null Curve") +
           xlab("Decision Point") + ylab("Success Probability")+
           ylim(0,1)+
+          geom_point(aes(y= y1, x = x2), size = 1, 
+                         color = "red3")+ 
           theme(axis.text = element_text(size=12),
                 axis.title = element_text(size=14))
         
