@@ -1,6 +1,7 @@
 library(shiny)
 library(DT)
 library(ggplot2)
+library(dplyr)
 source("sample_size_calc_bin_mrt.R")
 
 shinyServer(function(input,output,session){
@@ -10,6 +11,13 @@ shinyServer(function(input,output,session){
     # flags for when to display download buttons
     rv$ss_clicked <- FALSE
     rv$power_clicked <- FALSE
+    
+    # flags to make sure all parameters have settings before buttons clicked
+    rv$ea_set <- FALSE
+    rv$rp_set <- FALSE
+    rv$null_set <- FALSE
+    rv$te_set <- FALSE
+    
     
     ### Calculate total number of decision points based on # Days and # Decision points per day
     total_decision_points <- reactive({
@@ -96,17 +104,27 @@ shinyServer(function(input,output,session){
     
     # vector of randomization probabilities
     rand_prob <- reactive({
-    
+        print('in rp')
+        print(input$rand_prob_choices)
         if (input$rand_prob_choices == "constant"){
+            
             rand_prob <- rep(input$rand_prob_const, total_decision_points())
             rv$rp_shape <- "constant"
+            rv$rp_set <- TRUE
+            print('set const')
         } else if (input$rand_prob_choices == "tv_days") {
+            
             rand_prob <- rep(P_inter_days()$Randomization.Probability, 
                          each = input$occ_per_day)
             rv$rp_shape <- "time-varying"
+            rv$rp_set <- TRUE
+            print('set tv')
         } else if (input$rand_prob_choices == "tv_dec_pts") {
+            
             rand_prob <- P_inter_dec()$Randomization.Probability
             rv$rp_shape <- "time-varying"
+            rv$rp_set <- TRUE
+            print('set tv')
         }
         
         rand_prob
@@ -171,6 +189,8 @@ shinyServer(function(input,output,session){
             
             result <- matrix(log(input$alpha_constant_mean))
             
+            rv$null_set <- TRUE
+            
         } else if (input$alpha_choices == "loglinear") {
             validate(
                 need(input$alpha_loglinear_initial > 0, 
@@ -186,9 +206,12 @@ shinyServer(function(input,output,session){
             slope <- (final_log - initial_log) / total_decision_points() 
             
             result <- matrix(c(initial_log - slope, slope ), ncol=1)
-
+            
+            rv$null_set <- TRUE
+            
         } else if (input$alpha_choices == "logquadratic"){
-           validate(
+           
+            validate(
                 need(input$alpha_logquad_initial > 0, 
                      "Error: Please specify the initial value of baseline 
                       success probability greater than 0"),
@@ -216,6 +239,7 @@ shinyServer(function(input,output,session){
             a_mat <- as.matrix(c(a1, a2, a3), ncol=1)
 
             result <- a_mat
+            rv$null_set <- TRUE
         }
 
         result
@@ -291,12 +315,16 @@ shinyServer(function(input,output,session){
             if (input$beta_choices == "constant") {
                 
                 t_mat <- as.matrix(rep(1, times = total_decision_points()))
+                rv$te_set <- TRUE
+                
                 return(t_mat)
             } else if (input$beta_choices == "loglinear"){
                 
                 t_mat <- as.matrix(
                             cbind(rep(1, times = total_decision_points()),
                                   1:total_decision_points()))
+                rv$te_set <- TRUE
+                
                 return(t_mat)
                 
             } else if (input$beta_choices == "logquadratic"){
@@ -306,6 +334,9 @@ shinyServer(function(input,output,session){
                 three <- two^2
                 
                 t_mat <- as.matrix(cbind(one, two, three))
+                
+                rv$te_set <- TRUE
+                
                 return(t_mat)
             }
             
@@ -503,6 +534,7 @@ shinyServer(function(input,output,session){
             result <- rep(input$avail_constant_mean, total_decision_points())
             
             rv$ea_shape <- "constant"
+            rv$ea_set <- TRUE
             
         } else if (input$avail_choices == "linear") {
             
@@ -520,6 +552,7 @@ shinyServer(function(input,output,session){
                           length.out = total_decision_points())
             
             rv$ea_shape <- "linear"
+            rv$ea_set <- TRUE
             
         } else if (input$avail_choices == "tv_days") {
 
@@ -532,7 +565,7 @@ shinyServer(function(input,output,session){
                      "Error: Number of days does not match"))
             
             rv$ea_shape <- "time-varying"
-            
+            rv$ea_set <- TRUE
             
         } else if (input$avail_choices == "tv_dec_pts") {
 
@@ -546,7 +579,7 @@ shinyServer(function(input,output,session){
                      "Error: Number of decision points does not match")
             
             rv$ea_shape <- "time-varying"
-
+            rv$ea_set <- TRUE
         }
         
         validate(
@@ -557,6 +590,7 @@ shinyServer(function(input,output,session){
                  "Warning: Some values of expected availability are greater 
                   than 1")
         )
+        
         result
     })
     
@@ -707,7 +741,19 @@ shinyServer(function(input,output,session){
 
 
     sample_size <- eventReactive(input$button_calculate_sample_size, {
-
+        print('enter  ss')
+        print(rv$rp_shape)
+        print(rand_prob())
+        
+        print(rv$ea_set)
+        print(rv$rp_set)
+        print(rv$null_set)
+        print(rv$te_set)
+        
+        validate(need(
+            rv$ea_set & rv$rp_set & rv$null_set & rv$te_set,
+            "Provide values for all parameters first."
+        ))
         rv$ss_clicked <- TRUE
            
            out <- tryCatch(
@@ -760,7 +806,7 @@ shinyServer(function(input,output,session){
         
         if (sample_size() > 10) {
             HTML(
-              paste("<h4 style = 'color:blue';> The required sample size is ",
+              paste("<h5 style = 'color:blue';> The required sample size is ",
                     sample_size(), 
                     "to attain", 
                     input$power*100,
@@ -769,7 +815,7 @@ shinyServer(function(input,output,session){
         } else {
             # if calculated sample size <=10, don't output sample size
             HTML(
-              paste("<h4 style = 'color:blue';> The required sample size is 
+              paste("<h5 style = 'color:blue';> The required sample size is 
                      less than or equal to 10 to attain", 
                     input$power*100,
                     "% power when the significance level is",
@@ -785,7 +831,11 @@ shinyServer(function(input,output,session){
 # Calculate Power ---------------------------------------------------------
     
     power <- eventReactive(input$button_calculate_power, {
-        
+        validate(need(
+            rv$ea_set & rv$rp_set & rv$null_set & rv$te_set,
+            "Provide values for all parameters first."
+        ))
+        rv$power_clicked <- TRUE
         out <- tryCatch(
             {
                 
@@ -824,13 +874,16 @@ shinyServer(function(input,output,session){
     output$power <- renderUI({
         validate(
             need(!is.na(power()) & !is.null(power()), 
-                 "There was an error in the computation of the sample size. 
-                 Most likely this comes from the choice of null curve and proximal treatment effect.
-                 Check inputs and try again. See mrtbincalc documentation for further details."))
+                 paste0(
+                     "There was an error in the computation of the power.", 
+                     " Most likely this comes from choice of null curve and ",
+                     "proximal treatment effect. ",
+                     " Check inputs and try again. 
+               See mrtbincalc documentation for further details.")))
         
         
         if (power() >= 0.4) {
-            HTML(paste("<h4 style = 'color:blue';> The power we get is ", 
+            HTML(paste("<h5 style = 'color:blue';> The power we get is ", 
                        round(power(), 3)*100,
                        "% with sample size", 
                        input$sample_size,
@@ -838,7 +891,7 @@ shinyServer(function(input,output,session){
                        input$sig_level,"."))
         } else {
             ### If the calculated power is less than 40% ###
-            HTML(paste("<h4 style = 'color:blue';> The power we get is less than 40% with sample size", 
+            HTML(paste("<h5 style = 'color:blue';> The power we get is less than 40% with sample size", 
                        input$sample_size, 
                        "when the significance level is",
                        input$sig_level,"."))
@@ -853,7 +906,14 @@ shinyServer(function(input,output,session){
     sample_size_history <- reactiveValues(data=NULL)
     
     observeEvent(input$button_calculate_sample_size, {
-      # only update if valid sample size
+      # only update if valid sample size and all settings were made before 
+      # call to compute results
+        
+      validate(need(
+            rv$ea_set & rv$rp_set & rv$null_set & rv$te_set,
+            FALSE
+        ))
+        
       validate(need(!is.null(sample_size()) & !is.na(sample_size()), FALSE))
         
       sample_size_history$avail_pattern <- c(sample_size_history$avail_pattern, 
@@ -917,8 +977,20 @@ shinyServer(function(input,output,session){
    
 
     output$sample_size_history_table <- renderDataTable({
-    
-        samp_size_hist()
+        # check that sample size table has been initialized
+        validate(need(!is.null(samp_size_hist()) & 
+                                   all(dim(samp_size_hist()) > 0),
+                      "No sample size calculations performed yet."))
+        
+        temp_tab <- samp_size_hist()[,c("Sample.Size",
+                                        "Power",
+                                        "Sig.Level",
+                                        "Rand.Prob.Shape",
+                                        "Total.Dec.Pts",
+                                        "Succ.Prob.No.Trt.Shape",
+                                        "Trt.Eff.Shape",
+                                        "Avail.Pattern")]
+        temp_tab %>% mutate_if(is.numeric, round, digits = 4)
     })
     
 
@@ -945,7 +1017,10 @@ shinyServer(function(input,output,session){
 
     # this is displayed when on the sample size setting
     pow_vs_n_plot1 <- eventReactive(input$button_calculate_sample_size, {
-        
+        validate(need(
+            rv$ea_set & rv$rp_set & rv$null_set & rv$te_set,
+            FALSE
+        ))
         rv$ss_clicked <- TRUE
 
 
@@ -992,6 +1067,10 @@ shinyServer(function(input,output,session){
 
     # this is displayed on the power setting
     pow_vs_n_plot2 <- eventReactive(input$button_calculate_power, {
+        validate(need(
+            rv$ea_set & rv$rp_set & rv$null_set & rv$te_set,
+            FALSE
+        ))
         rv$ss_clicked <- TRUE        
  
         out <- tryCatch(
@@ -1037,8 +1116,11 @@ shinyServer(function(input,output,session){
 # Power summary tables (beneath plot) -------------------------------------
     # case for when sample size is being calculated
     pow_summary1 <- eventReactive(input$button_calculate_sample_size, {
-
-        rv$power_clicked <- TRUE
+        validate(need(
+            rv$ea_set & rv$rp_set & rv$null_set & rv$te_set,
+            FALSE
+        ))
+        rv$ss_clicked <- TRUE
 
         out <- tryCatch(
             {
@@ -1079,7 +1161,10 @@ shinyServer(function(input,output,session){
     
     # for when power is being calculated
     pow_summary2 <- eventReactive(input$button_calculate_power, {
-
+        validate(need(
+            rv$ea_set & rv$rp_set & rv$null_set & rv$te_set,
+            FALSE
+        ))
         
         rv$power_clicked <- TRUE
         
@@ -1142,7 +1227,10 @@ shinyServer(function(input,output,session){
                                     total_dec_pts = c())
     
     observeEvent(input$button_calculate_power, {
-        
+        validate(need(
+            rv$ea_set & rv$rp_set & rv$null_set & rv$te_set,
+            FALSE
+        ))
         # only up date if valid power calculation was performed
         validate(need(!is.null(power()) & !is.na(power()), FALSE))
         
@@ -1171,6 +1259,7 @@ shinyServer(function(input,output,session){
         
         power_history$sample_size <- c(power_history$sample_size, 
                                        input$sample_size)
+        
         power_history$power <- c(power_history$power, power())
         
         power_history$sig_level <- c(power_history$sig_level, 
@@ -1185,7 +1274,8 @@ shinyServer(function(input,output,session){
     
     pow_history_table <- reactive({
 
-        pht <- data.frame("Sample Size" = power_history$sample_size,
+        pht <- data.frame(
+                   "Sample Size" = power_history$sample_size,
                    "Power" = power_history$power,
                    "Sig Level" = power_history$sig_level,
                    "Rand Prob Shape" = power_history$rand_prob_shape,
@@ -1200,12 +1290,24 @@ shinyServer(function(input,output,session){
                    "Avail Init" = power_history$avail_init,
                    "Avail Final" = power_history$avail_final)
         
-
-        pht
+        pht 
     })
     
     output$power_history_table <- renderDataTable({
-        pow_history_table()
+        validate(need(!is.null(pow_history_table()) & 
+                                   all(dim(pow_history_table()) > 0),
+                      "No history calculations performed yet."))
+        
+        pht <- pow_history_table()[,c("Sample.Size",
+                                      "Power",
+                                      "Sig.Level",
+                                      "Rand.Prob.Shape",
+                                      "Total.Dec.Pts",
+                                      "Succ.Prob.No.Trt.Shape",
+                                      "Trt.Eff.Shape",
+                                      "Avail.Pattern")]
+        
+        pht %>% mutate_if(is.numeric, round, digits = 4)
     })
     
     # download for power history table
@@ -1214,7 +1316,7 @@ shinyServer(function(input,output,session){
             paste0("power_history.csv")
         },
         content = function(file){
-            write.csv(power_history_tab(), file, row.names=FALSE)
+            write.csv(pow_history_table(), file, row.names=FALSE)
         }
     )
     
