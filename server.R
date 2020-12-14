@@ -311,6 +311,9 @@ shinyServer(function(input,output,session){
         y1 = alpha_input()
         x1 = seq(1:length(alpha_input()) )
         df_alpha <- data.frame(x1, y1)
+        
+        df_alpha<- data.frame(apply(df_alpha, 2, unclass))
+        
         ggplot(df_alpha)+
         geom_line(aes( y = alpha_input(), 
                      x = seq(1:length(alpha_input()))), size = 1, 
@@ -450,7 +453,7 @@ shinyServer(function(input,output,session){
     })
     
     output$beta_graph <- renderPlot({
-
+    
       if(!is.null(alpha_input()) & !is.null(beta_input())){
         ab_product <- alpha_input() * beta_input()  
           
@@ -460,29 +463,33 @@ shinyServer(function(input,output,session){
         validate(need(max(ab_product) < 1 & min(ab_product) > 0,
                         "Invalid probabilities. Must be between 0 and 1."))  
           
-        ggplot()+ aes(x = 1:length(alpha_input()),
-                         y = (alpha_input() * beta_input()))
+       
+        
+        validate(need(max(beta_input()*alpha_input()) < 1 && min(beta_input()*alpha_input()) > 0,
+                      "Invalid probabilities. Must be between 0 and 1."))  
+      
         
 
+
         y1 = alpha_input()
-        y2 = alpha_input() * beta_input()
+        y2 = beta_input()*alpha_input()
         x2 = seq(1:length(alpha_input()) )
         df_beta <- data.frame(x2, y2,y1)
+        df_beta <- data.frame(apply(df_beta, 2, unclass))
         
         ggplot(df_beta)+
           geom_line(aes( y = y2, 
                          x = x2), size = 1, 
-                    color = "deepskyblue3")+
-          ggtitle("Success Probability Null Curve") +
+                    color = "deepskyblue3",group=1)+
+          ggtitle("Null Vs. Alternative Hypothesis ") +
+                   
           xlab("Decision Point") + ylab("Success Probability")+
           ylim(0,1)+
           geom_point(aes(y= y1, x = x2), size = 1, 
                          color = "red3")+ 
           theme(axis.text = element_text(size=12),
                 axis.title = element_text(size=14))
-        
 
-        
       }
       
         # if(!is.null(alpha_input()) && !is.null(beta_input())){
@@ -617,25 +624,73 @@ shinyServer(function(input,output,session){
     
     ### Plot the graph for expected availability ###
     output$avail_graph <- renderPlot({
-        validate(need(!(is.null(avail_input())), 
-                      "Error: No availability input"))
-        
-        plot(avail_input(), 
-             xlab = "Decision Point", 
-             ylab = "Expected Availability", 
-             ylim = c(0, 1), 
-             type = "o",
-             pch = 16,
-             cex = 0.8, 
-             col = 4)
-        abline(h = mean(avail_input()), lty = 2)
-        legend("topleft", 
-               legend=c('Availability','Average Availability'), 
-               col = c(4,1),
-               lty = c(1,2), 
-               pch=c(16,NA),bty = "n")
+
+        validate(need(!(is.null(avail_input())), "Error: No availability input"))
+      
+      y3 <- avail_input()
+      x3 <- seq(1:length(avail_input()) )
+      m <- c(rep(mean(avail_input()), length(x3)))
+      
+      df_avail <- data.frame(y3, x3, m)
+      df_avail<- data.frame(apply(df_avail, 2, unclass))
+      
+       ggplot(df_avail)+
+        geom_line(aes( y =y3, 
+                       x = x3),
+                       size = 1, 
+                  color = "deepskyblue3")+
+        ggtitle("Availability") +
+        xlab("Decision Point") + ylab("Expected Availablility")+
+        ylim(0,1)+
+         geom_point(aes(y= m, x = x3), size = 1, 
+                    color = "red")+
+        theme(axis.text = element_text(size=12),
+              axis.title = element_text(size=14))
+      
     })
+<<<<<<< HEAD
+
+       
+        
+    #     plot(avail_input(), 
+    #          xlab = "Decision Point", 
+    #          ylab = "Expected Availability", 
+    #          ylim = c(0, 1), 
+    #          type = "o",
+    #          pch = 16,
+    #          cex = 0.8, 
+    #          col = 4)
+    #     abline(h = mean(avail_input()), lty = 2)
+    #     legend("topleft", 
+    #            legend=c('Availability','Average Availability'), 
+    #            col = c(4,1),
+    #            lty = c(1,2), 
+    #            pch=c(16,NA),bty = "n")
+    # 
+        
+    #     plot( avail_input(),
+    #          xlab = "Decision Point", 
+    #          ylab = "Expected Availability", 
+    #          ylim = c(0, 1), 
+    #          type = "o",
+    #          pch = 16,
+    #          cex = 0.8, 
+    #          col = 4)
+    #     abline(h = mean(avail_input()), lty = 2)
+    #     legend("topleft", 
+    #            legend=c('Availability','Average Availability'), 
+    #            col = c(4,1),
+    #            lty = c(1,2), 
+    #            pch=c(16,NA),bty = "n")
+    # 
+    # })
+    
+
+    
+
+=======
  
+>>>>>>> 1d5637029a19c90d23efdeacd15e0e09a5c6cae4
 
     
     ### Reading the file with respect to days for expected availability ###
@@ -1345,3 +1400,4 @@ shinyServer(function(input,output,session){
     })
     
 })
+
