@@ -4,6 +4,7 @@ library(ggplot2)
 library(dplyr)
 library(mrtbincalc)
 
+
 shinyServer(function(input,output,session){
     
     rv <- reactiveValues(data=NULL)
@@ -489,7 +490,7 @@ shinyServer(function(input,output,session){
         
         df_beta <- data.frame(x2, y2,y1)
         df_beta <- data.frame(apply(df_beta, 2, unclass))
-        
+
         ggplot(data = df_beta) +
           ggtitle("Success Probability Null and Alternative Curves") +
           
@@ -519,6 +520,7 @@ shinyServer(function(input,output,session){
           ylab("Success Probability") +
           xlab("Decision Point") +
           labs(color = "Legend") +
+          
           theme(legend.position = 'bottom')
         
         
@@ -677,6 +679,7 @@ shinyServer(function(input,output,session){
        
        
        
+
       ggplot(data = df_avail) +
         
         ggtitle("Availability vs. Decision Points") +
@@ -918,19 +921,19 @@ shinyServer(function(input,output,session){
         
         if (sample_size() > 10) {
             HTML(
-              paste("<h5 style = 'color:black';> The required sample size is ",
+              paste0("<h5 style = 'color:black';> The required sample size is ",
                     sample_size(), 
-                    "to attain", 
+                    " to attain ", 
                     input$power*100,
-                    "% power when the significance level is",
+                    "% power when the significance level is ",
                     input$sig_level,".")) 
         } else {
             # if calculated sample size <=10, don't output sample size
             HTML(
-              paste("<h5 style = 'color:black';> The required sample size is 
-                     less than or equal to 10 to attain", 
+              paste0("<h5 style = 'color:black';> The required sample size is 
+                     less than or equal to 10 to attain ", 
                     input$power*100,
-                    "% power when the significance level is",
+                    "% power when the significance level is ",
                     input$sig_level,
                     ". Please refer to the result section in the left column 
                      for suggestions.")) 
@@ -1185,13 +1188,13 @@ shinyServer(function(input,output,session){
             error=function(cond) {
                 message("Here's the original error message:")
                 message(cond)
-                # Choose a return value in case of error
+
                 return(NA)
             },
             warning=function(cond) {
                 message("Here's the original warning message:")
                 message(cond)
-                # Choose a return value in case of warning
+
                 return(NA)
             },
             finally={
@@ -1295,12 +1298,15 @@ shinyServer(function(input,output,session){
             finally={
                 message("exit power summary")
             }
-        )    
+        )
+        
+        
         return(out)
     })  
     
     output$power_summary1 <- renderDataTable({
-        validate(need(!is.na(pow_summary1() & !is.null(pow_summary1())),
+       print('tabletable') 
+       validate(need(!is.na(pow_summary1()) & !is.null(pow_summary1()),
                       FALSE))
        
         datatable(pow_summary1(), colnames=c("Power", "Sample Size")) 
