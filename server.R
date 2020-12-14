@@ -2,7 +2,8 @@ library(shiny)
 library(DT)
 library(ggplot2)
 library(dplyr)
-source("sample_size_calc_bin_mrt.R")
+library(mrtbincalc)
+#source("sample_size_calc_bin_mrt.R")
 
 shinyServer(function(input,output,session){
     
@@ -104,27 +105,26 @@ shinyServer(function(input,output,session){
     
     # vector of randomization probabilities
     rand_prob <- reactive({
-        print('in rp')
-        print(input$rand_prob_choices)
+
         if (input$rand_prob_choices == "constant"){
             
             rand_prob <- rep(input$rand_prob_const, total_decision_points())
             rv$rp_shape <- "constant"
             rv$rp_set <- TRUE
-            print('set const')
+     
         } else if (input$rand_prob_choices == "tv_days") {
             
             rand_prob <- rep(P_inter_days()$Randomization.Probability, 
                          each = input$occ_per_day)
             rv$rp_shape <- "time-varying"
             rv$rp_set <- TRUE
-            print('set tv')
+            
         } else if (input$rand_prob_choices == "tv_dec_pts") {
             
             rand_prob <- P_inter_dec()$Randomization.Probability
             rv$rp_shape <- "time-varying"
             rv$rp_set <- TRUE
-            print('set tv')
+            
         }
         
         rand_prob
@@ -741,14 +741,7 @@ shinyServer(function(input,output,session){
 
 
     sample_size <- eventReactive(input$button_calculate_sample_size, {
-        print('enter  ss')
-        print(rv$rp_shape)
-        print(rand_prob())
-        
-        print(rv$ea_set)
-        print(rv$rp_set)
-        print(rv$null_set)
-        print(rv$te_set)
+
         
         validate(need(
             rv$ea_set & rv$rp_set & rv$null_set & rv$te_set,
