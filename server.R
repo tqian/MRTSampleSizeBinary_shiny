@@ -277,7 +277,7 @@ shinyServer(function(input,output,session){
             
 
             
-            a_mat <- as.matrix(c(a1, a2, a3), ncol=1)
+            a_mat <- as.matrix(c(a3, a2, a1), ncol=1) # intercept in 1st entry
 
             result <- a_mat
             rv$null_set <- TRUE
@@ -457,13 +457,7 @@ shinyServer(function(input,output,session){
             b1 <- k1 - k3 - (1 - k2/2) * b2
             b3 <- k1 - b1 - b2
             
-            t_mat <- cbind(rep(1, times=total_decision_points()),
-                           1:total_decision_points(),
-                           (1:total_decision_points())^2)
-            
-            b_mat <- as.matrix(c(b1, b2, b3), ncol=1)
-            
-            result <- exp(t_mat %*% b_mat) 
+            b_mat <- as.matrix(c(b3, b2, b1), ncol=1) # intercept in the 1st entry
             
             result <- b_mat
         }
