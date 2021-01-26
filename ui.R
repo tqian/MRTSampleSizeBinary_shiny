@@ -539,12 +539,12 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
           sliderInput(
             "alpha_logquad_initial", 
             label = "Initial Value of Success Probability Null Curve", 
-            min = 0, max = 1,value = 0.6),
+            min = 0, max = 1,value = 0.4),
           
           sliderInput(
             "alpha_logquad_change_val",
             label = "Change Point Value of Success Probability Null Curve", 
-            min = 0, max = 1,value = 0.4),
+            min = 0, max = 1,value = 0.6),
           
           numericInput(
             "alpha_logquad_change_pt",
@@ -647,12 +647,12 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
           sliderInput(
             "beta_logquad_change_val",
             label = "Change Point Value of Proximal Treatment Effect", 
-            min = 0, max = 1,value = 0.4),
+            min = 0, max = 1,value = 0.5),
           
           numericInput(
             "beta_logquad_change_pt",
             label = "Change point of Proximal Treatment Effect", 
-            value = 10),
+            value = 15),
           
           p(em("Notes"),
             ": The proximal treatment effect under no treatment varies 
