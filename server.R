@@ -208,7 +208,7 @@ shinyServer(function(input,output,session){
     )
     
     
-# Calculating null success curve ------------------------------------------
+# Calculating success probability null curve ------------------------------------------
     # alpha vector
     a_mat <- reactive({
         # Initialize a value to avoid some internal error when running locally
@@ -218,8 +218,8 @@ shinyServer(function(input,output,session){
             
             validate(
                 need(input$alpha_constant_mean > 0, 
-                     paste0("Error: Please specify the baseline success", 
-                            " probability greater than 0"))
+                     paste0("Error: Please specify the success probability under the null", 
+                            " to be greater than 0"))
             )
             
             result <- matrix(log(input$alpha_constant_mean))
@@ -230,11 +230,19 @@ shinyServer(function(input,output,session){
             validate(
                 need(input$alpha_loglinear_initial > 0, 
                      paste0("Error: Please specify the initial value of", 
-                            " baseline success probability greater than 0")),
+                            " the success probability null curve to be greater than 0")),
+                
+                need(input$alpha_loglinear_initial < 1, 
+                     paste0("Error: Please specify the initial value of", 
+                            " the success probability null curve to be less than 1")),
                 
                 need(input$alpha_loglinear_final > 0, 
                      paste0("Error: Please specify the final value of", 
-                            " baseline success probability greater than 0"))
+                            " the success probability null curve to be greater than 0")),
+                
+                need(input$alpha_loglinear_final < 1, 
+                     paste0("Error: Please specify the final value of", 
+                            " the success probability null curve to be less than 1")),
             )
             
             initial_log <- log(input$alpha_loglinear_initial)
@@ -253,11 +261,16 @@ shinyServer(function(input,output,session){
             validate(
                 need(input$alpha_logquad_initial > 0, 
                      paste0("Error: Please specify the initial value of", 
-                     " baseline success probability greater than 0")),
+                            " the success probability null curve to be greater than 0")),
+                
+                need(input$alpha_logquad_initial < 1, 
+                     paste0("Error: Please specify the initial value of", 
+                            " the success probability null curve to be less than 1")),
                 
                 need(input$alpha_logquad_change_val > 0, 
-                     paste0("Error: Please specify the final value of baseline", 
-                     " success probability greater than 0")),
+                     paste0("Error: Please specify the success probability null curve value", 
+                     " at change point to be greater than 0")),
+                
                 
                 need(input$alpha_logquad_change_pt > 0, 
                      paste0("Error: Please specify the final value of baseline", 
@@ -347,7 +360,7 @@ shinyServer(function(input,output,session){
                     color = "deepskyblue3", group = 1) +
           
           xlab("Decision Point") + 
-          ylab("Baseline Success Probability") +
+          ylab("Success Probability Under H0") +
           ylim(0,1) +
           theme(axis.text  = element_text(size = 12),
                 axis.title = element_text(size = 14)) 
@@ -413,10 +426,10 @@ shinyServer(function(input,output,session){
             validate(
                 need(input$beta_loglinear_initial > 0, 
                      paste0("Error: Please specify the initial value of", 
-                            " proximal treatment effect greater than 0")),
+                            " the proximal treatment effect to be greater than 0")),
                 need(input$beta_loglinear_final > 0, 
                      paste0("Error: Please specify the final value of",
-                     " proximal treatment effect greater than 0"))
+                     " the proximal treatment effect to be greater than 0"))
             )
             
             initial_log <- log(input$beta_loglinear_initial)
@@ -434,11 +447,11 @@ shinyServer(function(input,output,session){
             validate(
                 need(input$beta_logquad_initial > 0, 
                      paste0("Error: Please specify the initial value of", 
-                            " baseline success probability greater than 0")),
+                            " the proximal treatment effect to be greater than 0")),
                 
                 need(input$beta_logquad_change_val > 0, 
-                     paste0("Error: Please specify the final value of", 
-                            " baseline success probability greater than 0")),
+                     paste0("Error: Please specify the value of", 
+                            " the proximal treatment effect at the change point to be greater than 0")),
                 
                 need(input$beta_logquad_change_pt > 0, 
                      paste0("Error: Please specify the final value of baseline", 
@@ -481,10 +494,16 @@ shinyServer(function(input,output,session){
         ab_product <- alpha_input() * beta_input()  
           
         validate(need(max(alpha_input()) < 1 & min(alpha_input()) > 0,
-                        "Current settings lead to invalid probabilities."))  
+                        paste0("Current settings lead to invalid probabilities (greater than 1 or smaller than 0).",
+                               " Please adjust the input of success probability null curve and/or",
+                               " the proximal treatment effect so that all success probabilities are",
+                               " between 0 and 1.")))
           
         validate(need(max(ab_product) < 1 & min(ab_product) > 0,
-                        "Current settings lead to invalid probabilities."))  
+                      paste0("Current settings lead to invalid probabilities (greater than 1 or smaller than 0).",
+                             " Please adjust the input of success probability null curve and/or",
+                             " the proximal treatment effect so that all success probabilities are",
+                             " between 0 and 1.")))
         
         validate(need(max(beta_input()*alpha_input()) < 1 &
                           min(beta_input()*alpha_input()) > 0,
@@ -499,7 +518,7 @@ shinyServer(function(input,output,session){
         df_beta <- data.frame(apply(df_beta, 2, unclass))
 
         ggplot(data = df_beta) +
-          ggtitle("Success Probability Null and Alternative Curves") +
+          ggtitle("Success Probability of Proximal Outcome Under Null and Under Alternative") +
           
           geom_line(mapping = aes(y     = y2, 
                                   x     = x2, 
@@ -569,7 +588,7 @@ shinyServer(function(input,output,session){
             validate(
                 need(input$avail_constant_mean > 0, 
                      paste0("Error: Please specify the average availability", 
-                            " greater than 0"))
+                            " to be greater than 0")),
             )
             
             result <- rep(input$avail_constant_mean, total_decision_points())
@@ -594,10 +613,10 @@ shinyServer(function(input,output,session){
             validate(
                 need(input$avail_linear_initial > 0, 
                      paste0("Error: Please specify the initial value of", 
-                            " expected availability greater than 0")),
+                            " the expected availability to be greater than 0")),
                 need(input$avail_linear_final > 0, 
                      paste0("Error: Please specify the final value of", 
-                            " expected availability greater than 0"))
+                            " the expected availability to be greater than 0")),
             )
             
             result <- seq(from = input$avail_linear_initial, 
