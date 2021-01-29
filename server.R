@@ -1212,7 +1212,8 @@ shinyServer(function(input,output,session){
                                     beta      = b_mat(),
                                     alpha     = a_mat(),
                                     p_t       = rand_prob(),
-                                    gamma     = input$sig_level)
+                                    gamma     = input$sig_level,
+                                    max_n     = 200)
                 
             },
             error=function(cond) {
