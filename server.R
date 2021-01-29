@@ -271,24 +271,22 @@ shinyServer(function(input,output,session){
                      paste0("Error: Please specify the success probability null curve value", 
                      " at change point to be greater than 0")),
                 
+                need(input$alpha_logquad_change_val < 1, 
+                     paste0("Error: Please specify the success probability null curve value", 
+                            " at change point to be less than 1")),
                 
-                need(input$alpha_logquad_change_pt > 0, 
-                     paste0("Error: Please specify the final value of baseline", 
-                      " success probability greater than 0"))
+                need(input$alpha_logquad_change_pt > 1, 
+                     paste0("Error: Please specify the change point location",
+                            " (on the scale of decision point) to be greater than 1"))
             )
             
             k1 <- log(input$alpha_logquad_initial)
             k2 <- input$alpha_logquad_change_pt
             k3 <- log(input$alpha_logquad_change_val)
             
-            validate(need(k2 != 0, 
-                          "Error: Change point cannot be starting point"))
-            
             a2 <- (2 * k1 * k2 - 2 * k3 * k2) / (2 * k2 * (1 - k2/2) - 1)
             a1 <- k1 - k3 - (1 - k2/2) * a2
             a3 <- k1 - a1 - a2
-            
-
             
             a_mat <- as.matrix(c(a3, a2, a1), ncol=1) # intercept in 1st entry
 
@@ -414,9 +412,9 @@ shinyServer(function(input,output,session){
         if (input$beta_choices == "constant") {
             
             validate(
-                need(input$beta_constant_mean > 0, 
-                     paste0("Error: Please specify the proximal treatment", 
-                     " effect greater than 0"))
+                need(input$beta_constant_mean > 1, 
+                     paste0("Error: Please specify the constant proximal treatment", 
+                     " effect (relative risk) to be greater than 1 (i.e., a positive treatment effect)"))
             )
             
             
@@ -453,18 +451,15 @@ shinyServer(function(input,output,session){
                      paste0("Error: Please specify the value of", 
                             " the proximal treatment effect at the change point to be greater than 0")),
                 
-                need(input$beta_logquad_change_pt > 0, 
-                     paste0("Error: Please specify the final value of baseline", 
-                            " success probability greater than 0"))
+                need(input$beta_logquad_change_pt > 1, 
+                     paste0("Error: Please specify the change point location",
+                            " (on the scale of decision point) to be greater than 1"))
             )
             
             
             k1 <- log(input$beta_logquad_initial)
             k2 <- input$beta_logquad_change_pt
             k3 <- log(input$beta_logquad_change_val)
-            
-            validate(need(k2 != 0, 
-                          "Error: Change point cannot be starting point"))
             
             b2 <- (2 * k1 * k2 - 2 * k3 * k2) / (2 * k2 * (1 - k2/2) - 1)
             b1 <- k1 - k3 - (1 - k2/2) * b2
@@ -505,10 +500,6 @@ shinyServer(function(input,output,session){
                              " the proximal treatment effect so that all success probabilities are",
                              " between 0 and 1.")))
         
-        validate(need(max(beta_input()*alpha_input()) < 1 &
-                          min(beta_input()*alpha_input()) > 0,
-                      "Current settings lead to invalid probabilities."))  
-      
         ## plot set up
         y1 <- alpha_input()
         y2 <- beta_input() * alpha_input()
@@ -589,6 +580,10 @@ shinyServer(function(input,output,session){
                 need(input$avail_constant_mean > 0, 
                      paste0("Error: Please specify the average availability", 
                             " to be greater than 0")),
+                
+                need(input$avail_constant_mean <= 1, 
+                     paste0("Error: Please specify the average availability", 
+                            " to be less than or equal to 1"))
             )
             
             result <- rep(input$avail_constant_mean, total_decision_points())
@@ -614,9 +609,15 @@ shinyServer(function(input,output,session){
                 need(input$avail_linear_initial > 0, 
                      paste0("Error: Please specify the initial value of", 
                             " the expected availability to be greater than 0")),
+                need(input$avail_linear_initial <= 1, 
+                     paste0("Error: Please specify the initial value of", 
+                            " the expected availability to be less than or equal to 1")),
                 need(input$avail_linear_final > 0, 
                      paste0("Error: Please specify the final value of", 
                             " the expected availability to be greater than 0")),
+                need(input$avail_linear_final <= 1, 
+                     paste0("Error: Please specify the final value of", 
+                            " the expected availability to be less than or equal to 1"))
             )
             
             result <- seq(from = input$avail_linear_initial, 
