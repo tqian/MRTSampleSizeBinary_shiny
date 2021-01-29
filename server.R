@@ -521,10 +521,10 @@ shinyServer(function(input,output,session){
                                   color = "Null Hypothesis"), 
                     size = 1) +
 
-          geom_point(mapping = aes(y     = y2, 
-                                   x     = x2, 
-                                   color = "Alternative Hypothesis"),
-                     size = 1) +
+          # geom_point(mapping = aes(y     = y2, 
+          #                          x     = x2, 
+          #                          color = "Alternative Hypothesis"),
+          #            size = 1) +
       
           scale_color_manual(
             values = c("Null Hypothesis"        = "deepskyblue3",
