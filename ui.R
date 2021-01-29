@@ -58,7 +58,7 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
       "or if you have any questions.",
       "An R package with some additional functionality is called mrtbincalc",
       "and can be downloaded from",
-      a("CRAN", href = "https://cran.r-project.org")),
+      a("CRAN", href = "https://cran.r-project.org"), "."),
     
     ### Inputs Required ###
     
@@ -136,7 +136,10 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
     ),
     
     br(),
-    br()
+    br(),
+    h3("Developer"),
+    p("Eliot Wong-Toi, Thabat Dahdoul, Tianchen Qian"),
+    p("Contact: t.qian@uci.edu if you have any questions regarding using this app.")
   ),
   
 
