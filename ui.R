@@ -46,16 +46,19 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
     
     ### Purpose ###
     
-    h3("Purpose"),
+    h3("Overview"),
     p("This applet provides a sample size calculator for Micro-randomized 
       Trials with binary outcomes. The sample size formula is developed in",
       a("Sample Size Considerations for Micro-Randomized Trials with 
         Binary Outcome", 
         href="https://sites.google.com/view/tianchen-qian/research"),
       ", which is currently a work in progress. Please contact Tianchen Qian 
-      (qiantianchen.thu@gmail.com) 
-      if you would like a copy of the draft 
-      manuscript."),
+      (t.qian@uci.edu) 
+      if you would like a copy of the draft manuscript",
+      "or if you have any questions.",
+      "An R package with some additional functionality is called mrtbincalc",
+      "and can be downloaded from",
+      a("CRAN", href = "https://cran.r-project.org")),
     
     ### Inputs Required ###
     
@@ -63,11 +66,12 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
     tags$div(strong("1. Study Setup"),
              tags$ul(
                tags$li("Duration of the study in days"),
-               tags$li("Number of decision time points within each day."),
+               tags$li("Number of decision points within each day."),
                tags$li("Randomization probability, i.e. the probability of 
                         assigning the treatment at a decision time point.
-                        You can upload a file to specify the randomization 
-                        probability for each decision time or day.")
+                        This applet only allows constant randomization probability.
+                        Use the R package mrtbincalc if you have randomization probability
+                        that changes over the course of the study.")
                
              )
     ),
@@ -75,36 +79,48 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
     tags$div(strong("2. Availability"),
              tags$ul(
                tags$li("Treatment can only be provided when an indivudual is 
-                        available; see more details on availablity below. The 
+                        available. The 
                         expected availability is the probability a person is 
                         available to receive the intervention at the decision 
                         times."),
                tags$li("You need to select a time-varying pattern for the 
-                        expected availability. There are three patterns you can 
-                        choose from: constant, or linear over decision points.")
+                        expected availability. There are 4 patterns you can 
+                        choose from: constant, linear, time-varying depending
+                        on days in the study, or time-varying depending on the
+                        decision points in the study. For the latter two options,
+                        you can upload a file for the expected availability over time.")
              ),
     tags$div(strong("3. Success Probability Null Curve"),
              tags$ul(
                tags$li("The Success Probability Null Curve at each 
-                        decision time point is defined as the probability of 
+                        decision point is defined as the probability of 
                         the proximal outcome equal to 1 for available 
                         individuals who are not assigned treatment."),
                tags$li("You need to provide the trend of success probability 
-                        null curve. This could be either constant, linear, or 
-                        quadratic over decision points.")
+                        null curve. This could be either constant, log-linear, or 
+                        log-quadratic over decision points."),
+               tags$li("The shape of the success probability null curve needs to
+                       be at least as complex as the shape of the proximal treatment
+                       effect to have accurate results. For example, if the 
+                       shape of the proximal treatment effect is constant,
+                       then the shape of the success probability null curve can be
+                       either constant, log-linear, or log-quadratic. However, if the
+                       shape of the proximal treatment effect is log-linear,
+                       then the shape of the success probability null curve has to be
+                       either log-linear or log-quadratic, but it cannot be constant.")
                       )
              ),
     tags$div(strong("4. Proximal Treatment Effect"), 
              tags$ul(
-               tags$li("The Proximal Treatment Effect at each decision time 
-                        point is defined as the mean difference in the proximal 
-                        outcome between available people who are assigned a 
-                        treatment versus available people who are not assigned 
-                        treatment. In this work, we only consider the binary 
+               tags$li("The Proximal Treatment Effect (on the relative risk scale)
+                        at each decision 
+                        point is defined as the ratio between the proximal 
+                        outcome of available individuals who are assigned a 
+                        treatment versus available individuals who are not assigned 
                         treatment."),
                tags$li("You need to provide the trend of proximal treatment 
-                        effects. This could be either constant or time-varying, 
-                        e.g. linear or quadratic over decision points.")
+                        effects. This could be either constant, log-linear, or 
+                        log-quadratic over decision points.")
                )
              )
              
@@ -112,92 +128,15 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
     
     h3("Outputs"),
     tags$ul(
-      tags$li("We provide both power and sample size calculation. In both 
+      tags$li("We provide both power and sample size calculation
+               (we calculate one if you provide the other). In both 
                cases, you will need to input the desired significance level."),
       tags$li("Pressing the history button will display a list of powers and/or 
-               sample sizes calculated during the present session")
+               sample sizes calculated during the current session.")
     ),
     
     br(),
-    br(),
-    
-
-    # Background --------------------------------------------------------------
-    bsCollapse(
-      multiple = FALSE,
-      id = "background",
-      bsCollapsePanel(
-        h3("Background"),
-        p(strong("Just-in-time mobile interventions: ")), 
-        p("In just-in-time mobile interventions, treatments, provided via a 
-          mobile device,are intended to help an individual in the moment, such 
-          as engaging in an healthy behavior when an opportunity arises or 
-          successfully coping with a stressful event. The treatments are 
-          ususally intended to have a proximal, near-term impact on the 
-          individual."
-        ),
-        p(strong("Micro-randomized Trials:")), 
-        p("In a micro-randomized trial, treatments are sequentially randomized 
-           throughout the conduct of the study, with the result that each 
-           participant may be randomized at hundreds or thousands of decision 
-           times. At a decision time, treatment options may correspond to 
-           whether or not a treatment is provided; for example, whether or not 
-           a participant is provided a tailored activity suggestion. Or 
-           treatment options may be alternative types of treatment that can be 
-           provided in the same situation; for example, the activity planning 
-           treatment might have two options, asking the participant to create 
-           an activity plan for the next day or asking them to pick a plan from 
-           a list of previously created plans.  Considerations of treatment 
-           burden often imply that the randomization will not be uniform. For 
-           example, if treatment randomization probability is 0.4 and there are 
-           5 decision time per day and if an participant is always available, 
-           activity suggestions are delivered on average 2 time points per 
-           day."),
-                               
-        p(strong("Availability")), 
-        p("At some decision times, feasibility, ethics or burden considerations 
-           mean that the pariticipant is unavailable for treatment, and thus 
-           treatment should not be delivered. For example, if sensors indicate 
-           that the participant is likely driving a car or jthe participantis 
-           currently walking, then the activity message should not be sent. 
-           Other examples of when participants are unavailable for treatment 
-           include, in the alcohol recovery setting, a ‘warning’ treatment 
-           would only be potentially provided when sensors indicate that the 
-           participant is within 10 feet of a high-risk location or a treatment 
-           might only be provided if the participant reports a high level of 
-           craving. Individuals may be unavailable for treatment by choice. 
-           For example, the application on the phone should permit the user to 
-           turn off the activity messages for some amount of time; this option 
-           is considered critical to maintaining participant buy-in and 
-           engagement."),
-         
-        p(strong("Additional Consideration:")), 
-        tags$div("1. In the input, we require the inputs of \"Duration of the 
-                  Study (Days) \" and \"Number of Decision Time Points per 
-                  Day\". The use of the word \"Day\" only means the treatment 
-                  effect are constant within each \"day\". For example, suppose 
-                  one is interested in conducting a 12-week study with one 
-                  decision time per day and want to calculate the sample size 
-                  under the conjecture that the treatment effects pretty much 
-                  stay in the same level within each week. Then enter 12 and 7 
-                  under \"Duration of the Study (Days) \" and \"Number of 
-                  Decision Time Points per Day\" respectively will serve the 
-                  purpose."),
-        br(),
-        tags$div("2. When the output sample size is small, one might reconsider 
-                  the followings: \n (1) whether you are correctly or 
-                  conservatively guessing the average of expected availability, 
-                  (2) whether the duration of study is too long, and (3) 
-                  whether the average of treatment effect is overestimated and 
-                  the trend of treatment effects is too simplistic."),
-        br(),
-        tags$div("3. In this work, we only consider the case where proximal 
-                  treatment effect within each day are identical and the trend 
-                  of effects are constant, linear and quadratic. To calculate 
-                  the sample size for general treatment effects, see the 
-                  formula in Liao et.al (2016).")
-        )
-      )
+    br()
   ),
   
 
@@ -293,15 +232,16 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
           
           # explanation of how to use/what this setting means
           p("With this setting, the expected availability for each decision 
-             point on a given day will be the same, but expected  
+             point on a given day will be the same across all decision points within that day
+             (if there are multiple decision points per day), but the expected
              availability can vary across days. If you want a template of a 
-             .csv file, you can first download the template and then try 
-             uploading them."
+             .csv file, you can first download the template, revise the numbers, and then 
+             upload it."
             ),
           
           downloadButton("ea_days_template", "Template"),
           
-          p("In the sample file, the expected availability is contantly 0.7"),
+          p("In the template file, the expected availability is contantly 0.7"),
           p("The number of inputs for this file should be equal to the number 
              of days."),
           p("Showing the first 5 rows of the uploaded file."),
@@ -320,11 +260,11 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
             ),
           
           p("If you want a template of a .csv file, you can first download this 
-             template and then try uploading them."),
+             template, revise the numbers, then upload it."),
           
           downloadButton("ea_dec_pts_template", "Template"),
           
-          p("In the sample file, the expected availability is contantly 0.7."),
+          p("In the template file, the expected availability is contantly 0.7."),
           p("The number of inputs for this file should be equal to the number 
              of decision points."),
           p("Showing the first 5 rows of the uploaded file."),
@@ -341,20 +281,20 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
                               
              ),
         
-        ### Comments on linear pattern of expected availability ###
-        conditionalPanel(
-          condition = "input.avail_choices == 'linear'",
-          
-          p(em("Notes: "), 
-            "A linearly increasing pattern of expected availability might be 
-             used if participants will find the intervention useful and thus 
-             more likely to turn the intervention on"),
-          
-          p("A linearly decreasing pattern of expected availability might be 
-             used if participants learn more about the intervetion and get 
-             bored through the course of the study and thus getting less likely 
-            to turn on the invervention.")
-          ),
+        # ### Comments on linear pattern of expected availability ###
+        # conditionalPanel(
+        #   condition = "input.avail_choices == 'linear'",
+        #   
+        #   p(em("Notes: "), 
+        #     "A linearly increasing pattern of expected availability might be 
+        #      used if participants will find the intervention useful and thus 
+        #      more likely to turn the intervention on"),
+        #   
+        #   p("A linearly decreasing pattern of expected availability might be 
+        #      used if participants learn more about the intervetion and get 
+        #      bored through the course of the study and thus getting less likely 
+        #     to turn on the invervention.")
+        #   ),
       ),
       column(1),
       column(
@@ -420,14 +360,15 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
           
           # explanation of how to use/what this setting means
           p("With this setting randomization probabilities for decision points 
-             on the same day will be the same, but randomization probabilities 
+             on the same day will be the same (if there are multiple decision
+             points for each day), but randomization probabilities 
              across days can differ. If you want a template of .csv file, you 
-             can first download the template and then try uploading them."
+             can first download the template, revise the numbers, and then upload it."
             ),
           
           downloadButton("days_template", "Template"),
           
-          p("In the sample file, the randomization probability is contantly 
+          p("In the template file, the randomization probability is contantly 
              0.4"),
           p("The number of inputs for this file should be equal to the number 
              of days."),
@@ -448,12 +389,12 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
             ),
           
           p("If you want a template of .csv file, you can first download the 
-             template and then try uploading them."
+             template, revise the numbers, and then upload it."
             ),
           
           downloadButton("dec_pts_template", "Template"),
           
-          p("In the sample file, the randomization probability is contantly 
+          p("In the template file, the randomization probability is contantly 
              0.4"),     
           p("The number of inputs for this file should be equal to the number 
              of decision times."),
@@ -485,7 +426,7 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
         ### constant, loglinear, logquadratic
         selectizeInput(
           "alpha_choices", 
-          label = "Select one of the following trends for the success 
+          label = "Select one of the following shapes for the success 
                    probability null curve", 
           choices = list("Constant"      = "constant",
                          "Log-linear"    = "loglinear",
@@ -502,9 +443,13 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
             label = "Average of Success Probability Null Curve",
             min = 0, max = 1, value = 0.5),
           
-          p(em("Notes"),
+          p(em("Caution: The shape here needs to be at least as \"complex\" as the shape
+               for proximal treatment effect below. See the left panel for more explanation.")),
+          
+          p(em("Note"),
             ": The success probability under no treatment stays constant over 
-             the study.")),
+             the study. Your input will be this constant."
+            )),
         
         ### Inputs for loglinear trend of success probability null curve ###
         conditionalPanel(
@@ -520,16 +465,25 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
             label = "Final Value of Success Probability Null Curve", 
             min = 0, max = 1,value = 0.4),
           
-          p(em("Notes"),
-            ": The loglinearly increasing form of a success probability null 
-             curve might be used if participants will get more enthusiastically 
-             engage in the apps and thus the success probability under no 
-             treatment will increase as the study goes."),
+          p(em("Caution: The shape here needs to be at least as \"complex\" as the shape
+               for proximal treatment effect below. See the left panel for more explanation.")),
           
-          p("The loglinearly decreasing form of a success probability null 
-            curve might be used if participantsare likely to disengage the 
-            activity suggestionss and thus the success probability under 
-            no treatment will decrease as the study goes.")
+          p(em("Note"),
+            ": The success probability under no treatment changes log-linearly over 
+             the course of the study. Your input includes the initial value (i.e., the success probability 
+            under no treatment at the first decision point) and the final value (i.e.,
+            the success probability under no treatment at the last decision point)."),
+          
+          p("The log-linearly increasing pattern of a success probability null 
+             curve might be used if participants are expected to build up habit
+             over time and more likely to have a successfull proximal outcome (outcome=1)
+             later on in the study (compared to early on in the study) even
+             when no treatment is provided."),
+          
+          p("The log-linearly decreasing pattern of a success probability null 
+            curve might be used if participants are less likely to have a 
+            successfull proximal outcome (outcome=1) later on in the study 
+            (compard to early on in the study) when no treatment is provided."),
         ),
              
         ### Inputs for logquadratic trend of success probability null curve ###
@@ -550,10 +504,21 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
             "alpha_logquad_change_pt",
             label = "Change point of Success Probability Null Curve", 
             value = 10),
+
+          p(em("Caution: The shape here needs to be at least as \"complex\" as the shape
+               for proximal treatment effect below. See the left panel for more explanation.")),
           
-          p(em("Notes"),
-            ": The success probability under no treatment varies quadratically 
-             over the study.")
+          p(em("Note"),
+            ": The success probability under no treatment changes log-quadratically over 
+             the course of the study. Your input includes the initial value (i.e., the success probability 
+            under no treatment at the first decision point), the success probability at the 
+            change point of the log-quadratic curve, and the change point location (in terms of
+            decision point) of the log-quadratic curve."),
+          
+          p("This can be used when it is expected that the success probability
+            under no treatment will increase (decrease) at first then decrease (increase) later on
+            in the study."),
+          
         )
       ),
       column(1),
@@ -588,7 +553,7 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
         ### quadratic, constant, linear
         selectizeInput(
           "beta_choices", 
-          label = "Select one of the following trends for the proximal 
+          label = "Select one of the following shapes for the proximal 
                    treatment effect", 
           choices = list("Constant"      = "constant",
                          "Log-linear"    = "loglinear",
@@ -604,9 +569,10 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
           sliderInput(
             "beta_constant_mean", 
             label = "Average of Proximal Treatment Effect",
-            min = 0, max = 3.0, value = 1.2, step = 0.01),
+            min = 1, max = 3.0, value = 1.2, step = 0.01),
             p(em("Notes"),
-              ": The proximal treatment effect stays constant over the study.")
+              ": The proximal treatment effect (relative risk) stays constant over the study.
+              Your input will be this constant.")
           ),
         
         ### Inputs for loglinear trend of proximal treatment effect ###
@@ -623,16 +589,21 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
             label = "Final Value of Proximal Treatment Effect",
             min = 0, max = 3.0, value = 1.1, step = 0.01),
           
-          p(em("Notes"),
-            ": The loglinearly increasing form of a proximal treatment effect 
+          p(em("Note"),
+            ": The proximal treatment effect (relative risk) changes log-linearly over 
+             the course of the study. Your input includes the initial value (i.e., the 
+            proximal treatment effect at the first decision point) and the final value (i.e.,
+            the proximal treatment effect at the last decision point)."),
+          
+          p("The log-linearly increasing pattern of a proximal treatment effect 
              might be used if participants will get more enthusiastically 
              engage in the apps and thus the proximal treatment effect will 
-             increase as the study goes."),
+             increase over time."),
           
-          p("The loglinearly decreasing form of a proximal treatment effect 
-             might be used if participantsare likely to disengage the activity 
-             suggestionss and thus the proximal treatment effect will decrease 
-             as the  study goes.")
+          p("The log-linearly decreasing pattern of a proximal treatment effect 
+             might be used if participantsare likely to disengage with the app
+             (e.g., due to habituation), and thus the proximal treatment effect
+             will decrease over time.")
           ),
              
         ### Inputs for logquadratic trend of proximal treatment effect ###
@@ -654,9 +625,13 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
             label = "Change point of Proximal Treatment Effect", 
             value = 15),
           
-          p(em("Notes"),
-            ": The proximal treatment effect under no treatment varies 
-             quadratically over the study.")
+          p(em("Note"),
+            ": The proximal treatment effect (relative risk) changes log-quadratically over 
+             the course of the study. Your input includes the initial value (i.e., the
+            proximal treatment effect at the first decision point), the proximal treatment effect at the 
+            change point of the log-quadratic curve, and the change point location (in terms of
+            decision point) of the log-quadratic curve."),
+          
         )
       ),
       
@@ -686,7 +661,7 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
         ### Choices to choose from "sample size" or "power" ###
         radioButtons(
           "radio_choices", 
-          label    = "Are you interested in finding sample size or power?", 
+          label    = "Would you like to calculate sample size or power?", 
           choices  = list("Sample Size" = "choice_sample_size",
                          "Power"        = "choice_power"),
           selected = "choice_sample_size")
@@ -860,6 +835,6 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
   
   collapsable = TRUE,
   footer = HTML("<p style = 'font-size:12px'> Please direct correspondence to 
-                 <a href='mailto:sunji@umich.edu'>sunji@umich.edu</a></p>")
+                 <a href='mailto:t.qian@uci.edu'>t.qian@uci.edu</a></p>")
   
 ))
