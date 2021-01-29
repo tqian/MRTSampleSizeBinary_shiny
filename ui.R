@@ -613,12 +613,12 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
           sliderInput(
             "beta_logquad_initial", 
             label = "Initial Value of Proximal Treatment Effect", 
-            min = 0, max = 1,value = 0.6),
+            min = 0, max = 3.0, value = 1.1, step = 0.01),
           
           sliderInput(
             "beta_logquad_change_val",
             label = "Change Point Value of Proximal Treatment Effect", 
-            min = 0, max = 1,value = 0.5),
+            min = 0, max = 3.0, value = 1.3, step = 0.01),
           
           numericInput(
             "beta_logquad_change_pt",
