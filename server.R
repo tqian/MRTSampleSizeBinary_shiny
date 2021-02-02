@@ -242,7 +242,7 @@ shinyServer(function(input,output,session){
                 
                 need(input$alpha_loglinear_final < 1, 
                      paste0("Error: Please specify the final value of", 
-                            " the success probability null curve to be less than 1")),
+                            " the success probability null curve to be less than 1"))
             )
             
             initial_log <- log(input$alpha_loglinear_initial)
