@@ -81,6 +81,7 @@ shinyServer(function(input,output,session){
                  paste0("Error: some value of randomization probability", 
                         " is less than 0"))
         )
+
         pl <- min(nrow(P_inter_dec()), 5)
         validate(need(pl > 0, "No rows to show."))
         datatable(P_inter_dec(), 
@@ -221,12 +222,14 @@ shinyServer(function(input,output,session){
                      paste0("Error: Please specify the success probability under the null", 
                             " to be greater than 0"))
             )
-            
+          
             result <- matrix(log(input$alpha_constant_mean))
             
             rv$null_set <- TRUE
             
         } else if (input$alpha_choices == "loglinear") {
+
+
             validate(
                 need(input$alpha_loglinear_initial > 0, 
                      paste0("Error: Please specify the initial value of", 
@@ -244,7 +247,7 @@ shinyServer(function(input,output,session){
                      paste0("Error: Please specify the final value of", 
                             " the success probability null curve to be less than 1")),
             )
-            
+          cat(file=stderr(), "postcheck", "\n")
             initial_log <- log(input$alpha_loglinear_initial)
             
             final_log <- log(input$alpha_loglinear_final)
@@ -253,6 +256,7 @@ shinyServer(function(input,output,session){
             slope <- (final_log - initial_log) / total_decision_points() 
             
             result <- matrix(c(initial_log - slope, slope ), ncol=1)
+
             
             rv$null_set <- TRUE
             
@@ -329,6 +333,7 @@ shinyServer(function(input,output,session){
     })
     
     alpha_input <- reactive({
+
         if(!is.null(a_mat()) & !is.null(g_t())) {
             return(exp(g_t() %*% a_mat()))
         } else {
@@ -339,10 +344,12 @@ shinyServer(function(input,output,session){
     ### plot of the graphs for the baseline success probability ###
     
     output$alpha_graph <- renderPlot({
+
       if (!is.null(alpha_input())){
+
         validate(need(max(alpha_input()) < 1 & min(alpha_input()) > 0,
                     "Current settings lead to invalid probabilities."))   
-     
+
         ## ggplot in the works
         y1 = alpha_input()
         x1 = seq(1:length(alpha_input()) )
