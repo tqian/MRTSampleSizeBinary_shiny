@@ -325,87 +325,94 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
     br(),
     fluidRow(
       column(
-        5,
-        selectizeInput(
-          "rand_prob_choices",
-          label = "Select one of the following patterns for the randomization 
-                   probability",
-          choices = list("Constant"                      = "constant",
-                         "Time-Varying: Days"            = "tv_days",
-                         "Time-Varying: Decision Points" = "tv_dec_pts"),
-          options = list(placeholder  = "Please select a pattern",
-                         onInitialize = I('function() { this.setValue(0); }'))
-          ),
-             
-        ### Inputs for constant pattern of expected availability ###
-        conditionalPanel(
-          condition = "input.rand_prob_choices =='constant' ",
-          
-          numericInput(
-            "rand_prob_const",                               
-            label = "Constant Randomization Probability",
-            value = 0.4 ),
-          
-          textOutput("setting_warning_ranPro") 
-          ),
-
-        ### Inputs for linear pattern of expected availability ###
-        conditionalPanel(
-          condition = "input.rand_prob_choices == 'tv_days' ",
-          
-          fileInput(
-            "file1",
-            "Choose a .csv file of time-varying randomization probability 
-             (Days) to upload",
-                                        
-            accept = c('.csv')
-            ),
-          
-          # explanation of how to use/what this setting means
-          p("With this setting randomization probabilities for decision points 
-             on the same day will be the same (if there are multiple decision
-             points for each day), but randomization probabilities 
-             across days can differ. If you want a template of .csv file, you 
-             can first download the template, revise the numbers, and then upload it."
-            ),
-          
-          downloadButton("days_template", "Template"),
-          
-          p("In the template file, the randomization probability is contantly 
-             0.4"),
-          p("The number of inputs for this file should be equal to the number 
-             of days."),
-          p("Showing the first 5 rows of the uploaded file."),
-          
-          dataTableOutput("P_inter_table_days")
-          ),
-
-        ### Inputs for linear pattern of expected availability ###
-        conditionalPanel(
-          condition = "input.rand_prob_choices == 'tv_dec_pts' ",
-          
-          fileInput(
-            "file2",
-            "Choose a .csv file of time-varying randomization probability 
-             (Decision Times) to upload",
-            accept = c('.csv')
-            ),
-          
-          p("If you want a template of .csv file, you can first download the 
-             template, revise the numbers, and then upload it."
-            ),
-          
-          downloadButton("dec_pts_template", "Template"),
-          
-          p("In the template file, the randomization probability is contantly 
-             0.4"),     
-          p("The number of inputs for this file should be equal to the number 
-             of decision times."),
-          p("Showing the first 5 rows of the uploaded file."),
-          
-          dataTableOutput('P_inter_table_dec')
-          ),
-      )
+        3,
+        numericInput(
+          "rand_prob_const",                               
+          label = "Constant Randomization Probability",
+          value = 0.4 ),
+        
+        textOutput("setting_warning_ranPro")),
+        
+      #   selectizeInput(
+      #     "rand_prob_choices",
+      #     label = "Select one of the following patterns for the randomization 
+      #              probability",
+      #     choices = list("Constant"                      = "constant",
+      #                    "Time-Varying: Days"            = "tv_days",
+      #                    "Time-Varying: Decision Points" = "tv_dec_pts"),
+      #     options = list(placeholder  = "Please select a pattern",
+      #                    onInitialize = I('function() { this.setValue(0); }'))
+      #     ),
+      #        
+      #   ### Inputs for constant pattern of expected availability ###
+      #   conditionalPanel(
+      #     condition = "input.rand_prob_choices =='constant' ",
+      #     
+      #     numericInput(
+      #       "rand_prob_const",                               
+      #       label = "Constant Randomization Probability",
+      #       value = 0.4 ),
+      #     
+      #     textOutput("setting_warning_ranPro") 
+      #     ),
+      # 
+      #   ### Inputs for linear pattern of expected availability ###
+      #   conditionalPanel(
+      #     condition = "input.rand_prob_choices == 'tv_days' ",
+      #     
+      #     fileInput(
+      #       "file1",
+      #       "Choose a .csv file of time-varying randomization probability 
+      #        (Days) to upload",
+      #                                   
+      #       accept = c('.csv')
+      #       ),
+      #     
+      #     # explanation of how to use/what this setting means
+      #     p("With this setting randomization probabilities for decision points 
+      #        on the same day will be the same (if there are multiple decision
+      #        points for each day), but randomization probabilities 
+      #        across days can differ. If you want a template of .csv file, you 
+      #        can first download the template, revise the numbers, and then upload it."
+      #       ),
+      #     
+      #     downloadButton("days_template", "Template"),
+      #     
+      #     p("In the template file, the randomization probability is contantly 
+      #        0.4"),
+      #     p("The number of inputs for this file should be equal to the number 
+      #        of days."),
+      #     p("Showing the first 5 rows of the uploaded file."),
+      #     
+      #     dataTableOutput("P_inter_table_days")
+      #     ),
+      # 
+      #   ### Inputs for linear pattern of expected availability ###
+      #   conditionalPanel(
+      #     condition = "input.rand_prob_choices == 'tv_dec_pts' ",
+      #     
+      #     fileInput(
+      #       "file2",
+      #       "Choose a .csv file of time-varying randomization probability 
+      #        (Decision Times) to upload",
+      #       accept = c('.csv')
+      #       ),
+      #     
+      #     p("If you want a template of .csv file, you can first download the 
+      #        template, revise the numbers, and then upload it."
+      #       ),
+      #     
+      #     downloadButton("dec_pts_template", "Template"),
+      #     
+      #     p("In the template file, the randomization probability is contantly 
+      #        0.4"),     
+      #     p("The number of inputs for this file should be equal to the number 
+      #        of decision times."),
+      #     p("Showing the first 5 rows of the uploaded file."),
+      #     
+      #     dataTableOutput('P_inter_table_dec')
+      #     ),
+      # )
     ),
     
     tags$hr(),
@@ -737,7 +744,11 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
           
           uiOutput("sample_size"),
           
+          headerPanel(""),
+          
           plotOutput("power_vs_n1"),
+          
+          headerPanel(""),
           
           dataTableOutput("power_summary1")
           ),
@@ -749,7 +760,11 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
           
           uiOutput("power"),
           
+          headerPanel(""),
+          
           plotOutput("power_vs_n2"),
+          
+          headerPanel(""),
           
           dataTableOutput("power_summary2")                                      
           ),
@@ -773,8 +788,15 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
           dataTableOutput("power_history_table"),
           
           uiOutput('download_pow')
-          )
+          ),
+        
+        
+        uiOutput('download_tab_desc'),
+
         )
+      
+      
+
     ),
     
     br(),

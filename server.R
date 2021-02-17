@@ -145,26 +145,26 @@ shinyServer(function(input,output,session){
     # vector of randomization probabilities
     rand_prob <- reactive({
 
-        if (input$rand_prob_choices == "constant"){
-            
-            rand_prob <- rep(input$rand_prob_const, total_decision_points())
-            rv$rp_shape <- "constant"
-
-     
-        } else if (input$rand_prob_choices == "tv_days") {
-            
-            rand_prob <- rep(P_inter_days()$Randomization.Probability, 
-                         each = input$occ_per_day)
-            rv$rp_shape <- "time-varying"
-            
-        } else if (input$rand_prob_choices == "tv_dec_pts") {
-            
-            rand_prob <- P_inter_dec()$Randomization.Probability
-            rv$rp_shape <- "time-varying"
-            
-        }
-
-        
+        # if (input$rand_prob_choices == "constant"){
+        #     
+        #     rand_prob <- rep(input$rand_prob_const, total_decision_points())
+        #     rv$rp_shape <- "constant"
+        # 
+        # 
+        # } else if (input$rand_prob_choices == "tv_days") {
+        #     
+        #     rand_prob <- rep(P_inter_days()$Randomization.Probability, 
+        #                  each = input$occ_per_day)
+        #     rv$rp_shape <- "time-varying"
+        #     
+        # } else if (input$rand_prob_choices == "tv_dec_pts") {
+        #     
+        #     rand_prob <- P_inter_dec()$Randomization.Probability
+        #     rv$rp_shape <- "time-varying"
+        #     
+        # }
+        rand_prob <- rep(input$rand_prob_const, total_decision_points())
+        rv$rp_shape <- "constant"
         rand_prob
     })
     
@@ -959,21 +959,30 @@ shinyServer(function(input,output,session){
         if (sample_size() > 10) {
             HTML(
               paste0("<h5 style = 'color:black';> The required sample size is ",
-                    sample_size(), 
+                    "<span style= 'color: blue'>",
+                    sample_size(),
+                    "</span>",
                     " to attain ", 
+                    "<span style= 'color: blue'>",
                     input$power*100,
-                    "% power when the significance level is ",
+                    "%</span>",
+                    " power when the significance level is ",
                     input$sig_level,".")) 
         } else {
             # if calculated sample size <=10, don't output sample size
             HTML(
-              paste0("<h5 style = 'color:black';> The required sample size is 
-                     less than or equal to 10 to attain ", 
+              paste0("<h5 style = 'color:black';> The required sample size is ",
+                     "less than or equal to 10 to attain ", 
+                     "<span style= 'color: blue'>",
                     input$power*100,
-                    "% power when the significance level is ",
+                    "%</span>",
+                    " power when the significance level is ",
+                    "<span style= 'color: blue'>",
                     input$sig_level,
-                    ". Please refer to the result section in the left column 
-                     for suggestions.")) 
+                    "</span>",
+                    ". Sample size n <= 10 may result in inaccurate power ",
+                    "calculation, because the sample size formula is based on ",
+                    "an asymptotic result. Try a larger n.")) 
         }
         
     })
@@ -1037,21 +1046,29 @@ shinyServer(function(input,output,session){
         
         if (power() >= 0.4) {
 
-            HTML(paste("<h5 style = 'color:black';> The power we get is ", 
+            HTML(paste0("<h5 style = 'color:black';> The power we get is ",
+                       "<span style= 'color: blue'>",
                        round(power(), 3)*100,
-                       "% with sample size ", 
+                       "%</span>",
+                       " with sample size ", 
+                       "<span style= 'color: blue'>",
                        input$sample_size,
+                       "</span>",
                        " when the significance level is ",
                        input$sig_level,"."))
         } else {
             ### If the calculated power is less than 40% ###
 
-            HTML(paste("<h5 style = 'color:black';> ", 
+            HTML(paste0("<h5 style = 'color:black';> ", 
                        "The power we get is less than 40% with sample size", 
-
-                       input$sample_size, 
+                       "<span style= 'color: blue'>",
+                       input$sample_size,
+                       "</span>",
                        " when the significance level is ",
-                       input$sig_level,"."))
+                       "<span style= 'color: blue'>",
+                       input$sig_level,
+                       "</span>",
+                       "."))
         }
     })
     
@@ -1115,7 +1132,11 @@ shinyServer(function(input,output,session){
     })
 
     samp_size_hist <- reactive({
-            data.frame(
+            print(sample_size_history$sample_size)
+      print(sample_size_history$power)
+      print(sample_size_history$sig_level)
+      print(sample_size_history$rand_prob_shape)
+      data.frame(
                    "Sample Size" = sample_size_history$sample_size,
                    "Power" = sample_size_history$power,
                    "Sig Level" = sample_size_history$sig_level,
@@ -1155,7 +1176,7 @@ shinyServer(function(input,output,session){
                   colnames = c("Sample Size",
                                "Power",
                                "Sig. Level",
-                               "Rand. Prob. Shape",
+                               "Rand. Prob.",
                                "Total Dec. Pts",
                                "Succ. Prob. No Trt Shape",
                                "Trt Eff. Shape",
@@ -1202,7 +1223,7 @@ shinyServer(function(input,output,session){
     pow_vs_n_plot1 <- eventReactive(input$button_calculate_sample_size, {
         validate(need(
             !is.null(avail_input()) & !is.null(rand_prob()) & 
-              rv$null_set & rv$te_set,
+              rv$null_set & rv$te_set & sample_size() >= 10,
             FALSE
         ))
         rv$ss_clicked <- TRUE
@@ -1245,7 +1266,8 @@ shinyServer(function(input,output,session){
     
     
     output$power_vs_n1 <- renderPlot({
-        validate(need(!is.na(pow_vs_n_plot1()), 
+        
+        validate(need(!is.na(pow_vs_n_plot1()) & sample_size() > 10, 
                       FALSE))
         pow_vs_n_plot1()
     })
@@ -1542,6 +1564,37 @@ shinyServer(function(input,output,session){
         if(rv$power_clicked) {
             downloadButton('pow_dl', 'Power History')
         }
+    })
+    
+    
+    # download for power history table description
+    output$hist_desc_dl <- downloadHandler(
+      filename = function() {
+        paste0("history_description.txt")
+      },
+      content = function(file){
+        writeLines("
+    - Sample Size: calculated sample size (when calculating sample size) or user-input sample size (when calculating power)\n
+    - Power: user-input power (when calculating sample size) or calculated power (when calculating power)\n
+    - Sig Level: user-input significance level\n
+    - Rand Prob: randomization probability\n
+    - Total Dec Pts: total number of decision points\n
+    - Succ Prob No Trt Shape: shaped of the success probability null curve\n
+    - Trt Eff Shape: shaped of the treatment effect over time\n
+    - p10: outcome success probability at the first decision point under no treatment\n
+    - pT0: outcome success probability at the last decision point under no treatment\n
+    - p11: outcome success probability at the first decision point under treatment\n
+    - pT1: outcome success probability at the last decision point under treatment\n
+    - Avail Pattern: shape of the expected availability over time\n
+    - Avail Init: expected availability at the first decision point\n
+    - Avail Final: expected availability at the last decision point", file, sep = "")
+      }
+    )
+    
+    output$download_tab_desc <- renderUI({
+      if(rv$power_clicked | rv$ss_clicked) {
+        downloadButton('hist_desc_dl', 'Table Description')
+      }
     })
     
 })
