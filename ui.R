@@ -56,8 +56,8 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
       (t.qian@uci.edu) 
       if you would like a copy of the draft manuscript",
       "or if you have any questions.",
-      "An R package with some additional functionality is called mrtbincalc",
-      "and can be downloaded from",
+      "An R package with some additional functionality is called ",
+      "MRTSampleSizeBinary and can be downloaded from",
       a("CRAN", href = "https://cran.r-project.org"), "."),
     
     ### Inputs Required ###
@@ -70,8 +70,8 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
                tags$li("Randomization probability, i.e. the probability of 
                         assigning the treatment at a decision time point.
                         This applet only allows constant randomization probability.
-                        Use the R package mrtbincalc if you have randomization probability
-                        that changes over the course of the study.")
+                        Use the R package MRTSampleSizeBinary if you have randomization 
+                        probability that changes over the course of the study.")
                
              )
     ),
