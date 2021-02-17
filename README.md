@@ -5,10 +5,10 @@ with binary outcomes. The sample size formula is developed in ["Sample Size
 Considerations for Micro-Randomized Trials with Binary
 Outcome"](https://sites.google.com/view/tianchen-qian/research) by E. Cohn, T.
 Qian, and S. Murphy. This is currently a work in progress; contact Tianchen Qian
-(qiantianchen.thu@gmail.com) if you would like a copy of the draft manuscript. 
-The code to implement this calculator is found in the `mrtbincalc` package 
-which was developed by Eliot Wong-Toi and Thabat Dahdoul under the direction of 
-Tianchen Qian.
+(qiantianchen.thu@gmail.com) if you would like a copy of the draft manuscript.
+The code to implement this calculator is found in the `MRTSampleSizeBinary`
+package which was developed by Eliot Wong-Toi and Thabat Dahdoul under the
+direction of Tianchen Qian.
 
 Before using the calculator the user should have knowledge of the following:
 
