@@ -2,7 +2,7 @@ library(shiny)
 library(DT)
 library(ggplot2)
 library(dplyr)
-library(mrtbincalc)
+library(MRTSampleSizeBinary)
 
 
 shinyServer(function(input,output,session){
@@ -913,7 +913,7 @@ shinyServer(function(input,output,session){
                    
                    message("Try calculate sample size")
                    
-                   calculate_mrt_bin_samplesize_f(
+                   mrt_binary_ss(
                        avail_pattern = avail_input(),
                        f_t           = f_t(),
                        g_t           = g_t(),
@@ -953,7 +953,7 @@ shinyServer(function(input,output,session){
                " Most likely this comes from choice of null curve and ",
                "proximal treatment effect. ",
                " Check inputs and try again. 
-               See mrtbincalc documentation for further details.")))
+               See MRTSampleSizeBinary documentation for further details.")))
 
         
         if (sample_size() > 10) {
@@ -1003,14 +1003,14 @@ shinyServer(function(input,output,session){
                 
                 message("Try calculate power")
                 
-                calculate_mrt_bin_power_f(avail_pattern = avail_input(),
-                                          f_t           = f_t(),
-                                          g_t           = g_t(),
-                                          beta          = b_mat(),
-                                          alpha         = a_mat(),
-                                          p_t           = rand_prob(),
-                                          gamma         = input$sig_level,
-                                          n             = input$sample_size)
+                mrt_binary_power(avail_pattern = avail_input(),
+                                 f_t           = f_t(),
+                                 g_t           = g_t(),
+                                 beta          = b_mat(),
+                                 alpha         = a_mat(),
+                                 p_t           = rand_prob(),
+                                 gamma         = input$sig_level,
+                                 n             = input$sample_size)
                 
             },
             error=function(cond) {
@@ -1041,7 +1041,7 @@ shinyServer(function(input,output,session){
                      " Most likely this comes from choice of null curve and",
                      " proximal treatment effect. ",
                      " Check inputs and try again. 
-               See mrtbincalc documentation for further details.")))
+               See MRTSampleSizeBinary documentation for further details.")))
         
         
         if (power() >= 0.4) {
