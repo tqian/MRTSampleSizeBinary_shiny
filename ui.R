@@ -777,7 +777,8 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
           
           dataTableOutput("sample_size_history_table"),
           
-          uiOutput('download_ss')
+          uiOutput('download_ss'),
+          uiOutput('download_tab_desc_hist')
           ),
                
                
@@ -787,11 +788,12 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
           
           dataTableOutput("power_history_table"),
           
-          uiOutput('download_pow')
+          uiOutput('download_pow'),
+          uiOutput('download_tab_desc_pow')
           ),
         
         
-        uiOutput('download_tab_desc'),
+
 
         )
       

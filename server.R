@@ -1567,7 +1567,9 @@ shinyServer(function(input,output,session){
     })
     
     
-    # download for power history table description
+    # download forhistory table description
+    # (shiny needs duplicates for these tables to have two sep buttons)
+    # inelegant solution, but it works
     output$hist_desc_dl <- downloadHandler(
       filename = function() {
         paste0("history_description.txt")
@@ -1591,9 +1593,38 @@ shinyServer(function(input,output,session){
       }
     )
     
-    output$download_tab_desc <- renderUI({
-      if(rv$power_clicked | rv$ss_clicked) {
-        downloadButton('hist_desc_dl', 'Table Description')
+    output$hist_desc_dl1 <- downloadHandler(
+      filename = function() {
+        paste0("history_description.txt")
+      },
+      content = function(file){
+        writeLines("
+    - Sample Size: calculated sample size (when calculating sample size) or user-input sample size (when calculating power)\n
+    - Power: user-input power (when calculating sample size) or calculated power (when calculating power)\n
+    - Sig Level: user-input significance level\n
+    - Rand Prob: randomization probability\n
+    - Total Dec Pts: total number of decision points\n
+    - Succ Prob No Trt Shape: shaped of the success probability null curve\n
+    - Trt Eff Shape: shaped of the treatment effect over time\n
+    - p10: outcome success probability at the first decision point under no treatment\n
+    - pT0: outcome success probability at the last decision point under no treatment\n
+    - p11: outcome success probability at the first decision point under treatment\n
+    - pT1: outcome success probability at the last decision point under treatment\n
+    - Avail Pattern: shape of the expected availability over time\n
+    - Avail Init: expected availability at the first decision point\n
+    - Avail Final: expected availability at the last decision point", file, sep = "")
+      }
+    )
+    
+    output$download_tab_desc_pow <- renderUI({
+      if(rv$power_clicked ) {
+        downloadLink('hist_desc_dl', 'Table Description')
+      }
+    })
+
+    output$download_tab_desc_hist <- renderUI({
+      if(rv$ss_clicked) {
+        downloadLink('hist_desc_dl1', 'Table Description')
       }
     })
     
