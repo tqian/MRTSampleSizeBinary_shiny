@@ -702,7 +702,8 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
           numericInput(
             "power", 
             label = HTML("Desired Power"), 
-            value = 0.8)
+            value = 0.8,
+            step = 0.05)
           ),
              
         ### type in sample size if you want to calculate the power attained ###
@@ -719,7 +720,8 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
         numericInput(
           "sig_level", 
           label = HTML("Significance Level"), 
-          value = 0.05)
+          value = 0.05,
+          step = 0.005)
              
       ),
       
