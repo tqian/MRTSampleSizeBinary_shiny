@@ -135,6 +135,21 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
                sample sizes calculated during the current session.")
     ),
     
+    h3("If sample size <= 10"),
+    tags$ul(
+      tags$li("When the calculator finds out that a sample size less than
+               or equal to 10 is sufficient to attain the desired power, the calculator does
+               not output the exact sample size but produces an error message. This is because 
+               the sample size calculator is based on an asymptotic result, and in
+               this situation the sample size result may not be as accurate.
+               (A small sample correction is built in the calculator, but even with the correction
+               the sample size result may still be inaccurate when it is <= 10.) In general,
+               when the output sample size is small, one might reconsider the following: (1)
+               whether you are correctly or conservatively guessing the average of expected
+               availability, (2) whether the duration of study is too long, (3) whether the
+               treatment effect is overestimated, and (4) whether the power is set too low.")
+    ),
+    
     br(),
     br(),
     h3("Developer"),
