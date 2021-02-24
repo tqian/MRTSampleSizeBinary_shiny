@@ -954,7 +954,7 @@ shinyServer(function(input,output,session){
     output$sample_size <- renderUI({
         validate(
             need(
-              !is.na(sample_size()) & !is.null(sample_size()),
+              !is.na(sample_size() & !is.null(sample_size())),
               paste0(
               "There was an error in the computation of the sample size.", 
                " Most likely this comes from choice of null curve and ",
