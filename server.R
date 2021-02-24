@@ -1061,7 +1061,14 @@ shinyServer(function(input,output,session){
                See MRTSampleSizeBinary documentation for further details.")))
         
         
-        if (power() >= 0.4) {
+        if (input_sample_size_reactive() <= 10) {
+          # if input sample size <=10, don't output power
+          
+          HTML(paste0("<h5 style = 'color:black';>",
+                      "Sample size n <= 10 may result in inaccurate power ",
+                      "calculation, because the power formula is based on ",
+                      "an asymptotic result. See the left panel for more information.")) 
+        } else if (power() >= 0.4) {
 
             HTML(paste0("<h5 style = 'color:black';> The power we get is ",
                        "<span style= 'color: blue'>",
@@ -1077,14 +1084,18 @@ shinyServer(function(input,output,session){
             ### If the calculated power is less than 40% ###
 
             HTML(paste0("<h5 style = 'color:black';> ", 
-                       "The power we get is less than 40% with sample size", 
+                       "The power we get is ", 
+                       "<span style= 'color: blue'>",
+                       "less than 40%",
+                       "</span>",
+                       " with sample size ", 
                        "<span style= 'color: blue'>",
                        input_sample_size_reactive(),
                        "</span>",
                        " when the significance level is ",
-                       "<span style= 'color: blue'>",
+                       # "<span style= 'color: blue'>",
                        input_sig_level_power_reactive(),
-                       "</span>",
+                       # "</span>",
                        "."))
         }
     })
@@ -1293,7 +1304,7 @@ shinyServer(function(input,output,session){
     pow_vs_n_plot2 <- eventReactive(input$button_calculate_power, {
         validate(need(
             !is.null(avail_input()) & !is.null(rand_prob()) &
-              rv$null_set & rv$te_set,
+              rv$null_set & rv$te_set & input_sample_size_reactive() > 10,
             FALSE
         ))
         rv$ss_clicked <- TRUE        
@@ -1332,7 +1343,8 @@ shinyServer(function(input,output,session){
     })    
     
     output$power_vs_n2 <- renderPlot({
-        validate(need(!is.na(pow_vs_n_plot2()) & !is.null(pow_vs_n_plot2()), 
+        validate(need(!is.na(pow_vs_n_plot2()) & !is.null(pow_vs_n_plot2()) &
+                      input_sample_size_reactive() > 10, 
                       FALSE))
         pow_vs_n_plot2()
     })
