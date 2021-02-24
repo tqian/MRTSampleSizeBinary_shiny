@@ -329,7 +329,8 @@ shinyUI(fluidPage(theme = shinytheme("readable"),
         numericInput(
           "rand_prob_const",                               
           label = "Constant Randomization Probability",
-          value = 0.4 ),
+          value = 0.4,
+          step = 0.05),
         
         textOutput("setting_warning_ranPro")),
         
