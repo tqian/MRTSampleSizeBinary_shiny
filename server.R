@@ -944,13 +944,6 @@ shinyServer(function(input,output,session){
     
     })
     
-    # make eventReactive version of input$power and input$sig_level
-    # to be used in the output
-    input_power_reactive <- eventReactive(
-      input$button_calculate_sample_size,input$power)
-    input_sig_level_samplesize_reactive <- eventReactive(
-      input$button_calculate_sample_size, input$sig_level)
-    
     output$sample_size <- renderUI({
         validate(
             need(
@@ -971,10 +964,10 @@ shinyServer(function(input,output,session){
                     "</span>",
                     " to attain ", 
                     "<span style= 'color: blue'>",
-                    input_power_reactive()*100,
+                    input$power*100,
                     "%</span>",
                     " power when the significance level is ",
-                    input_sig_level_samplesize_reactive(),".")) 
+                    input$sig_level,".")) 
         } else {
             # if calculated sample size <=10, don't output sample size
             HTML(
@@ -984,11 +977,11 @@ shinyServer(function(input,output,session){
                      "</span>",
                      " to attain ", 
                      "<span style= 'color: blue'>",
-                     input_power_reactive()*100,
+                    input$power*100,
                     "%</span>",
                     " power when the significance level is ",
                     # "<span style= 'color: blue'>",
-                    input_sig_level_samplesize_reactive(),
+                    input$sig_level,
                     # "</span>",
                     ". Sample size n <= 10 may result in inaccurate power ",
                     "calculation, because the sample size formula is based on ",
@@ -1043,13 +1036,6 @@ shinyServer(function(input,output,session){
         
     })
     
-    # make eventReactive version of input$sample_size and input$sig_level
-    # to be used in the output
-    input_sample_size_reactive <- eventReactive(
-      input$button_calculate_power,input$sample_size)
-    input_sig_level_power_reactive <- eventReactive(
-      input$button_calculate_power, input$sig_level)
-    
     output$power <- renderUI({
         validate(
             need(!is.na(power()) & !is.null(power()), 
@@ -1069,21 +1055,21 @@ shinyServer(function(input,output,session){
                        "%</span>",
                        " with sample size ", 
                        "<span style= 'color: blue'>",
-                       input_sample_size_reactive(),
+                       input$sample_size,
                        "</span>",
                        " when the significance level is ",
-                       input_sig_level_power_reactive(),"."))
+                       input$sig_level,"."))
         } else {
             ### If the calculated power is less than 40% ###
 
             HTML(paste0("<h5 style = 'color:black';> ", 
                        "The power we get is less than 40% with sample size", 
                        "<span style= 'color: blue'>",
-                       input_sample_size_reactive(),
+                       input$sample_size,
                        "</span>",
                        " when the significance level is ",
                        "<span style= 'color: blue'>",
-                       input_sig_level_power_reactive(),
+                       input$sig_level,
                        "</span>",
                        "."))
         }
