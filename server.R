@@ -972,20 +972,17 @@ shinyServer(function(input,output,session){
             # if calculated sample size <=10, don't output sample size
             HTML(
               paste0("<h5 style = 'color:black';> The required sample size is ",
-                     "<span style= 'color: blue'>",
-                     "less than or equal to 10",
-                     "</span>",
-                     " to attain ", 
+                     "less than or equal to 10 to attain ", 
                      "<span style= 'color: blue'>",
                     input$power*100,
                     "%</span>",
                     " power when the significance level is ",
-                    # "<span style= 'color: blue'>",
+                    "<span style= 'color: blue'>",
                     input$sig_level,
-                    # "</span>",
+                    "</span>",
                     ". Sample size n <= 10 may result in inaccurate power ",
                     "calculation, because the sample size formula is based on ",
-                    "an asymptotic result. See the left panel for what to do.")) 
+                    "an asymptotic result. Try a larger n.")) 
         }
         
     })
