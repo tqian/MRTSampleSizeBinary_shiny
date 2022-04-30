@@ -921,7 +921,8 @@ shinyServer(function(input,output,session){
                        alpha         = a_mat(),
                        p_t           = rand_prob(),
                        gamma         = input$sig_level,
-                       b             = 1-input$power) 
+                       b             = 1-input$power,
+                       less_than_10_possible = TRUE) 
 
                },
                error=function(cond) {
