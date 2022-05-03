@@ -5,8 +5,7 @@ account: tqian
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 2287986
-bundleId: 3168987
+bundleId: 5865901
 url: https://tqian.shinyapps.io/mrt_ss_binary/
-when: 1589948422.48781
-asMultiple: FALSE
-asStatic: FALSE
+when: 1651604527.4958
+lastSyncTime: 1651604527.49582
